@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/port2-main/index.html",
+      "permanent": false
+    }
+  ]
+}

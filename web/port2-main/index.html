@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2b57e6">
+  <title>로봇소프트웨어 D2 - 스마트 로봇 공학 포털</title>
+  <!-- Google Fonts for premium typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Header Navigation -->
+  <header class="main-header">
+    <div class="header-container">
+      <!-- Logo area -->
+      <div class="logo-area">
+        <div class="logo-icon">
+          <!-- Premium Robot/Gear SVG Icon -->
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="11" width="18" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+            <circle cx="8.5" cy="16" r="1.5" fill="currentColor"/>
+            <circle cx="15.5" cy="16" r="1.5" fill="currentColor"/>
+            <path d="M8 7V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M16 7V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="8" cy="6" r="1" fill="currentColor"/>
+            <circle cx="16" cy="6" r="1" fill="currentColor"/>
+            <path d="M12 2V5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="12" cy="2" r="1" fill="currentColor"/>
+          </svg>
+        </div>
+        <span class="logo-text">로봇소프트웨어 <span class="highlight">D2</span></span>
+      </div>
+      
+      <div class="header-nav-actions" id="headerNavActions">
+        <nav class="nav-menu">
+          <ul style="list-style: none; margin: 0; padding: 0;">
+            <li><a href="https://gemini.google.com" target="_blank" class="nav-link">Gemini</a></li>
+            <li><a href="https://notebooklm.google" target="_blank" class="nav-link">Notebook LM</a></li>
+            <li><a href="https://colab.research.google.com" target="_blank" class="nav-link">Colab</a></li>
+            <li><a href="https://chatgpt.com" target="_blank" class="nav-link">ChatGPT</a></li>
+            <li><a href="https://github.com" target="_blank" class="nav-link">GitHub</a></li>
+          </ul>
+        </nav>
+
+        <!-- Utility Actions -->
+        <div class="utility-actions">
+          <a href="cam.html" style="font-size: 20px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; margin-right: 8px;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1.0)'" title="D2반 사진첩">📸</a>
+          <div class="lang-selector" id="langSelector">
+            <span id="currentLang">KR</span>
+            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+            <div class="lang-dropdown" id="langDropdown">
+              <div class="lang-option active" data-lang="ko">KR</div>
+              <div class="lang-option" data-lang="en">ENG</div>
+              <div class="lang-option" data-lang="ja">JAPEN</div>
+            </div>
+          </div>
+
+          <!-- Logged Out State -->
+          <button class="login-btn" id="headerLoginBtn" data-translate-key="login">로그인</button>
+          
+          <!-- Logged In State (Hidden by default) -->
+          <div class="user-profile-area hidden" id="userProfileArea">
+            <span class="user-greeting" id="userGreeting"></span>
+            <button class="logout-btn" id="logoutBtn" data-translate-key="logout">로그아웃</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hamburger Menu Button -->
+      <button class="menu-toggle-btn" id="menuToggleBtn" aria-label="메뉴 열기">
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+      </button>
+    </div>
+  </header>
+  
+  <!-- Mobile Menu Overlay -->
+  <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+  <!-- Main Portal Layout -->
+  <main class="portal-container">
+    <div class="portal-grid">
+      
+      <!-- Left Column: Banner Slider -->
+      <section class="banner-slider-container">
+        <div class="slider-wrapper" id="sliderWrapper">
+          
+          <!-- Slide 1 -->
+          <div class="slide active" style="background-image: linear-gradient(to right, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.5) 45%, rgba(15, 23, 42, 0) 85%), linear-gradient(to top, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0) 25%), url('game사진.png'); background-size: cover; background-position: center;">
+            <div class="slide-content">
+              <span class="slide-badge">01 / DEPT WEBSITE</span>
+              <h2 class="slide-title" data-translate-key="slide1_title">로봇소프트웨어 학과사이트</h2>
+              <p class="slide-desc" data-translate-key="slide1_desc">동양미래대학교 로봇소프트웨어공학과의 공식 홈페이지로 바로 이동합니다.</p>
+              <a href="../ryugame/index.html" class="slide-action-btn">
+                <span data-translate-key="go_to">바로가기</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </a>
+            </div>
+          </div>
+          
+          <!-- Slide 2 -->
+          <div class="slide" style="background-image: linear-gradient(to right, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.5) 45%, rgba(15, 23, 42, 0) 85%), linear-gradient(to top, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0) 25%), url('game사진.png'); background-size: cover; background-position: center;">
+            <div class="slide-content">
+              <span class="slide-badge">02 / ASSIGNMENTS</span>
+              <h2 class="slide-title" data-translate-key="slide2_title">과제 공지</h2>
+              <p class="slide-desc" data-translate-key="slide2_desc">과제 제출 기한을 확인하고 나의 과제 완료 현황을 손쉽게 확인하세요.</p>
+              <a href="../ryugame/index.html" class="slide-action-btn">
+                <span data-translate-key="go_to">바로가기</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </a>
+            </div>
+          </div>
+          
+          <!-- Slide 3 -->
+          <div class="slide" style="background-image: linear-gradient(to right, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.5) 45%, rgba(15, 23, 42, 0) 85%), linear-gradient(to top, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0) 25%), url('game사진.png'); background-size: cover; background-position: center;">
+            <div class="slide-content">
+              <span class="slide-badge">03 / Q&A COMMUNITY</span>
+              <h2 class="slide-title" data-translate-key="slide3_title">질문 게시판</h2>
+              <p class="slide-desc" data-translate-key="slide3_desc">공부하다가 막히는 내용이나 학업 질문을 올려 소통하세요.</p>
+              <a href="../ryugame/index.html" class="slide-action-btn">
+                <span data-translate-key="go_to">바로가기</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </a>
+            </div>
+          </div>
+          
+          <!-- Slide 4 -->
+          <div class="slide" style="background-image: linear-gradient(to right, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.5) 45%, rgba(15, 23, 42, 0) 85%), linear-gradient(to top, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0) 25%), url('game사진.png'); background-size: cover; background-position: center;">
+            <div class="slide-content">
+              <span class="slide-badge">04 / 3D METAVERSE WORLD</span>
+              <h2 class="slide-title" data-translate-key="slide4_title">3D가상세계 월드</h2>
+              <p class="slide-desc" data-translate-key="slide4_desc">메타버스로 구현된 3D 가상 공간에서 스마트 월드를 경험해보세요.</p>
+              <a href="../ryugame/index.html" class="slide-action-btn">
+                <span data-translate-key="go_to">바로가기</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Slider Progress & Controls -->
+        <div class="slider-controls-bar">
+          <div class="slider-progress-track">
+            <div class="slider-progress-fill" id="progressFill"></div>
+          </div>
+          
+          <div class="slider-info-actions">
+            <span class="slider-counter" id="sliderCounter">1 / 4</span>
+            <div class="slider-buttons">
+              <button class="slider-arrow-btn" id="prevBtn" aria-label="이전 배너">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </button>
+              <button class="slider-play-btn" id="playPauseBtn" aria-label="일시정지">
+                <!-- Pause Icon by default -->
+                <svg class="pause-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="4" x2="18" y2="20"></line>
+                  <line x1="6" y1="4" x2="6" y2="20"></line>
+                </svg>
+                <!-- Play Icon (hidden by default) -->
+                <svg class="play-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              </button>
+              <button class="slider-arrow-btn" id="nextBtn" aria-label="다음 배너">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Content Cards & Services -->
+      <div class="right-content-wrapper">
+        
+        <!-- Boards Section (Robot Notice + Q&A Board) -->
+        <div class="boards-row">
+          
+          <!-- Robot Notice Card (과제 공지) -->
+          <article class="board-card notice-board">
+            <div class="board-header">
+              <h3 class="board-title" data-translate-key="board1_title">과제 공지</h3>
+              <button class="board-more-btn" id="assignmentNoticeBoard" aria-label="더보기">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+            </div>
+            
+            <ul class="board-list" id="mainAssignmentList">
+              <!-- Empty as requested -->
+            </ul>
+          </article>
+          
+          <!-- Right column boards wrapper -->
+          <div class="boards-right-col">
+            
+            <!-- Q&A Board Card (질문 게시판) -->
+            <article class="board-card qna-board">
+              <div class="board-header">
+                <h3 class="board-title" data-translate-key="board2_title">질문 게시판</h3>
+                <button class="board-more-btn" id="qnaBoardBtn" aria-label="더보기">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </button>
+              </div>
+              
+              <ul class="board-list" id="mainQnaList">
+                <!-- Empty as requested -->
+              </ul>
+            </article>
+
+            <!-- Real-time Chat Board -->
+            <article class="board-card chat-board">
+              <div class="board-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div class="chat-header-icon" style="color: var(--color-primary); display: flex; align-items: center;">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                  </div>
+                  <h3 class="board-title" data-translate-key="chat_title">실시간 D2 채팅방</h3>
+                </div>
+                <!-- Dynamic active users online dot indicator -->
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--color-accent-teal); font-weight: 600;">
+                  <span class="online-dot"></span>
+                  <span data-translate-key="chat_live">LIVE</span>
+                </div>
+              </div>
+              
+              <!-- Chat Content Area -->
+              <div class="chat-container-inner" id="chatContainerInner">
+                <!-- Logged Out Overlay -->
+                <div class="chat-logged-out-state" id="chatLoggedOutState">
+                  <div class="chat-lock-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                  </div>
+                  <p class="chat-login-prompt" data-translate-key="chat_login_prompt">로그인 후 실시간 채팅에<br>참여해보세요!</p>
+                  <button class="login-btn chat-login-btn" id="chatLoginBtn" data-translate-key="login">로그인</button>
+                </div>
+                
+                <!-- Logged In Chat State (Hidden by default) -->
+                <div class="chat-logged-in-state hidden" id="chatLoggedInState">
+                  <div class="chat-messages" id="chatMessages">
+                    <!-- Messages populated dynamically -->
+                  </div>
+                  <form class="chat-input-area" id="chatInputForm">
+                    <input type="text" id="chatInput" placeholder="메시지를 입력하세요..." autocomplete="off" required>
+                    <button type="submit" class="chat-send-btn" aria-label="전송">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                      </svg>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </article>
+
+          </div>
+
+        </div>
+
+        <!-- Major Services Section (주요 서비스) -->
+        <section class="services-container">
+          <h3 class="services-section-title" data-translate-key="services_title">주요서비스</h3>
+          <div class="services-grid">
+            
+            <!-- Service 1: E 서비스 -->
+            <a href="https://portal.dongyang.ac.kr/login_real.jsp?targetId=DMIS&RelayState=/" target="_blank" class="service-card">
+              <div class="service-icon-wrapper e-service-icon">
+                <!-- Globe / Web SVG Icon -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+              </div>
+              <span class="service-name" data-translate-key="service1_name">E 서비스</span>
+            </a>
+
+            <!-- Service 2: 원격수업강의 -->
+            <a href="https://eclass.dongyang.ac.kr/" target="_blank" class="service-card">
+              <div class="service-icon-wrapper class-service-icon">
+                <!-- Monitor / Online Class SVG Icon -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                  <line x1="8" y1="21" x2="16" y2="21"></line>
+                  <line x1="12" y1="17" x2="12" y2="21"></line>
+                  <path d="M12 7v4"></path>
+                  <path d="M9 10h6"></path>
+                </svg>
+              </div>
+              <span class="service-name" data-translate-key="service2_name">원격수업강의</span>
+            </a>
+
+            <!-- Service 3: 3D월드 -->
+            <a href="http://localhost:5173/world.html" id="serviceCard3d" class="service-card">
+              <div class="service-icon-wrapper world-3d-service-icon">
+                <!-- 3D Box SVG Icon -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+              </div>
+              <span class="service-name" data-translate-key="service3_name">3D월드</span>
+            </a>
+
+          </div>
+        </section>
+
+      </div>
+
+    </div>
+  </main>
+  <!-- Welcome Notification Modal -->
+  <div class="modal-overlay" id="welcomeModal">
+    <div class="modal-content">
+      <button class="modal-close-btn" id="closeWelcomeModal" aria-label="닫기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div style="text-align: center; margin-bottom: 20px;">
+        <svg style="width: 48px; height: 48px; color: var(--color-primary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+      <h2 class="modal-title" style="font-size: 20px; line-height: 1.4;" data-translate-key="welcome_title">로봇소프트웨어 D2반을 위한<br>웹사이트입니다!</h2>
+      <p class="modal-desc" style="margin-top: 16px; margin-bottom: 24px; font-size: 15px; line-height: 1.6;" data-translate-key="welcome_desc">
+        과제, 주요 공지, 가상월드의 내용을<br>
+        포함하고 있습니다!
+      </p>
+      
+      <button class="submit-btn" id="confirmWelcomeBtn" style="width: 100%;" data-translate-key="confirm">확인했습니다</button>
+    </div>
+  </div>
+
+  <!-- Login Modal -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-content">
+      <button class="modal-close-btn" id="closeLoginModal" aria-label="닫기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <h2 class="modal-title">로그인</h2>
+      <p class="modal-desc">서비스 이용을 위해 학번과 이름을 입력해주세요.</p>
+      
+      <form class="login-form">
+        <div class="form-group">
+          <label for="studentId">학번</label>
+          <input type="text" id="studentId" placeholder="예: 20261234" required>
+        </div>
+        <div class="form-group">
+          <label for="studentName">이름</label>
+          <input type="text" id="studentName" placeholder="이름을 입력하세요" required>
+        </div>
+        <button type="submit" class="submit-btn">로그인 하기</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Assignment Notice Modal -->
+  <div class="modal-overlay" id="assignmentModal">
+    <div class="modal-content" style="max-width: 1400px; width: 90vw; height: 80vh; display: flex; flex-direction: column; padding: 40px;">
+      <button class="modal-close-btn" id="closeAssignmentModal" aria-label="닫기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 2px solid var(--color-primary); padding-bottom: 16px; margin-right: 40px;">
+        <h2 class="modal-title" style="margin-bottom: 0; font-size: 28px; color: var(--color-board-blue);" data-translate-key="board1_title">과제 공지</h2>
+        <button class="submit-btn" id="openWritePostModal" style="margin-top: 0; padding: 10px 20px; background-color: var(--color-board-blue); display: flex; align-items: center; gap: 8px; font-size: 16px;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+          <span data-translate-key="write_btn">글쓰기</span>
+        </button>
+      </div>
+
+      <div class="assignment-list-ui" style="flex-grow: 1; overflow-y: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 16px;">
+          <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; color: var(--color-text-muted); position: sticky; top: 0; z-index: 10;">
+            <tr>
+              <th style="padding: 16px; font-weight: 700; width: 80px; text-align: center;" data-translate-key="col_no">번호</th>
+              <th style="padding: 16px; font-weight: 700;" data-translate-key="col_title">제목</th>
+              <th style="padding: 16px; font-weight: 700; width: 80px; text-align: center;" data-translate-key="col_complete">완료</th>
+              <th style="padding: 16px; font-weight: 700; width: 120px; text-align: center;" data-translate-key="col_author">작성자</th>
+              <th style="padding: 16px; font-weight: 700; width: 140px; text-align: center;" data-translate-key="col_date">등록일</th>
+            </tr>
+          </thead>
+          <tbody id="assignmentTableBody">
+            <tr style="border-bottom: 1px solid #e2e8f0; transition: background-color 0.2s;">
+              <td style="padding: 20px 16px; text-align: center; color: var(--color-text-muted);">1</td>
+              <td style="padding: 20px 16px;"><a href="#" style="color: var(--color-text-main); font-weight: 600; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--color-primary)'" onmouseout="this.style.color='var(--color-text-main)'">등록된 과제 공지가 없습니다.</a></td>
+              <td style="padding: 20px 16px; text-align: center;">-</td>
+              <td style="padding: 20px 16px; text-align: center;">-</td>
+              <td style="padding: 20px 16px; text-align: center; color: var(--color-text-muted);">-</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Write Post Modal -->
+  <div class="modal-overlay" id="writePostModal">
+    <div class="modal-content" style="max-width: 600px;">
+      <button class="modal-close-btn" id="closeWritePostModal" aria-label="닫기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <h2 class="modal-title" style="text-align: left; margin-bottom: 24px; border-bottom: 2px solid var(--color-primary); padding-bottom: 12px; font-size: 22px;" data-translate-key="new_assignment_title">새 과제 등록</h2>
+      
+      <form class="login-form" id="writePostForm">
+        <div class="form-group">
+          <label for="postSubject" data-translate-key="select_subject">과목 선택</label>
+          <select id="postSubject" required>
+            <option value="" disabled selected data-translate-key="select_subject_placeholder">과목을 선택해주세요</option>
+            <option value="중요 공지" data-translate-key="subject_important">중요 공지</option>
+            <option value="윈도우프로그래밍" data-translate-key="subject_win">윈도우프로그래밍</option>
+            <option value="전공영어" data-translate-key="subject_english">전공영어</option>
+            <option value="마이크로컨트롤러" data-translate-key="subject_micro">마이크로컨트롤러</option>
+            <option value="PLC 프로그래밍" data-translate-key="subject_plc">PLC 프로그래밍</option>
+            <option value="웹프로그래밍" data-translate-key="subject_web">웹프로그래밍</option>
+            <option value="인공지능개론" data-translate-key="subject_ai">인공지능개론</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="postTitle" data-translate-key="input_title">제목</label>
+          <input type="text" id="postTitle" placeholder="제목을 입력하세요" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="postContent" data-translate-key="input_content">내용</label>
+          <textarea id="postContent" placeholder="과제 내용을 상세히 입력해주세요." required></textarea>
+        </div>
+        
+        <div class="form-group" style="margin-top: 12px;">
+          <label style="font-weight: 600; font-size: 14px; margin-bottom: 4px;" data-translate-key="attach_image">이미지 첨부</label>
+          <div style="position: relative; border: 2px dashed #cbd5e1; border-radius: var(--radius-md); padding: 16px; text-align: center; cursor: pointer; background-color: #f8fafc; transition: border-color 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)'" onmouseout="this.style.borderColor='#cbd5e1'">
+            <input type="file" id="postImage" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px; color: #64748b; margin: 0 auto 6px;">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            <p style="font-size: 13px; color: #64748b; margin: 0;" id="postImageLabel">클릭하여 이미지 파일을 첨부하세요</p>
+            <div id="postImagePreviewContainer" style="margin-top: 10px; display: none;">
+              <img id="postImagePreview" src="" alt="Preview" style="max-height: 80px; border-radius: 6px; border: 1px solid #e2e8f0; margin: 0 auto;">
+            </div>
+          </div>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
+          <button type="button" class="submit-btn" id="cancelWriteBtn" style="background-color: #cbd5e1; color: #334155;" data-translate-key="cancel_btn">취소</button>
+          <button type="submit" class="submit-btn" data-translate-key="submit_btn">등록하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Read Post Modal -->
+  <div class="modal-overlay" id="readPostModal">
+    <div class="modal-content" style="max-width: 800px; padding: 40px; display: flex; flex-direction: column;">
+      <button class="modal-close-btn" id="closeReadPostModal" aria-label="닫기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      
+      <div style="margin-bottom: 24px; border-bottom: 2px solid var(--color-primary); padding-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
+        <div style="flex-grow: 1;">
+          <h2 id="readPostTitle" class="modal-title" style="margin-bottom: 12px; font-size: 26px; color: var(--color-text-main); text-align: left; line-height: 1.3;">제목이 들어갑니다</h2>
+          <div style="display: flex; gap: 16px; font-size: 14px; color: var(--color-text-muted);">
+            <span style="font-weight: 600;"><span data-translate-key="label_author">작성자</span>: <span id="readPostAuthor" style="font-weight: 400;">홍길동</span></span>
+            <span style="font-weight: 600;"><span data-translate-key="label_date">등록일</span>: <span id="readPostDate" style="font-weight: 400;">2026.05.21</span></span>
+          </div>
+        </div>
+        <button id="postDeleteBtn" class="submit-btn" style="background-color: #ef4444; padding: 8px 16px; font-size: 14px; display: none; flex-shrink: 0;" data-translate-key="delete_btn">삭제</button>
+      </div>
+
+      <div id="readPostContentContainer" style="flex-grow: 1; min-height: 200px; overflow-y: auto; margin-bottom: 16px; display: flex; flex-direction: column; gap: 16px;">
+        <div id="readPostContent" style="font-size: 16px; line-height: 1.6; color: var(--color-text-main); white-space: pre-wrap;">
+          여기에 본문 내용이 출력됩니다.
+        </div>
+        <div id="readPostImageContainer" style="text-align: center; display: none;">
+          <div style="border-top: 1px solid #e2e8f0; margin: 16px 0 24px;"></div>
+          <img id="readPostImage" src="" alt="Attached Image" style="max-width: 100%; max-height: 350px; border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        </div>
+      </div>
+      
+      <div style="display: flex; justify-content: center; gap: 24px; align-items: center; margin-top: 32px;">
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; color: var(--color-primary); background-color: #f1f5f9; padding: 10px 16px; border-radius: 8px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#e2e8f0'" onmouseout="this.style.backgroundColor='#f1f5f9'">
+          <input type="checkbox" id="readPostCompleteCheck" style="width: 20px; height: 20px; cursor: pointer;">
+          <span data-translate-key="task_complete">과제 완료</span>
+        </label>
+        <button type="button" class="submit-btn" id="confirmReadBtn" style="min-width: 120px;" data-translate-key="back_to_list">목록으로</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q&A List Modal -->
+  <div class="modal-overlay" id="qnaModal">
+    <div class="modal-content" style="max-width: 1400px; width: 90vw; height: 80vh; display: flex; flex-direction: column; padding: 40px;">
+      <button class="modal-close-btn" id="closeQnaModal" aria-label="닫기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 2px solid var(--color-primary); padding-bottom: 16px; margin-right: 40px;">
+        <h2 class="modal-title" style="margin: 0; font-size: 28px;" data-translate-key="board2_title">질문 게시판</h2>
+        <button class="submit-btn" id="openWriteQnaModal" style="margin-top: 0; padding: 10px 20px; display: flex; align-items: center; gap: 8px; font-size: 16px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          <span data-translate-key="write_btn">글쓰기</span>
+        </button>
+      </div>
+
+      <div class="assignment-list-ui" style="flex-grow: 1; overflow-y: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 16px;">
+          <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; color: var(--color-text-muted); position: sticky; top: 0; z-index: 10;">
+            <tr>
+              <th style="padding: 16px; font-weight: 700; width: 80px; text-align: center;" data-translate-key="col_no">번호</th>
+              <th style="padding: 16px; font-weight: 700;" data-translate-key="col_title">제목</th>
+              <th style="padding: 16px; font-weight: 700; width: 120px; text-align: center;" data-translate-key="col_author">작성자</th>
+              <th style="padding: 16px; font-weight: 700; width: 140px; text-align: center;" data-translate-key="col_date">등록일</th>
+            </tr>
+          </thead>
+          <tbody id="qnaTableBody">
+            <tr style="border-bottom: 1px solid #e2e8f0; transition: background-color 0.2s;">
+              <td colspan="4" style="padding: 20px 16px; text-align: center; color: var(--color-text-muted);" id="qnaEmptyRow">등록된 질문이 없습니다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Write Q&A Modal -->
+  <div class="modal-overlay" id="writeQnaModal">
+    <div class="modal-content" style="max-width: 800px; width: 90%;">
+      <button class="modal-close-btn" id="closeWriteQnaModal" aria-label="닫기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <h2 class="modal-title" style="text-align: left; margin-bottom: 24px; border-bottom: 2px solid var(--color-primary); padding-bottom: 12px; font-size: 22px;" data-translate-key="new_qna_title">질문 등록</h2>
+      
+      <form class="login-form" id="writeQnaForm">
+        <div class="form-group">
+          <label for="qnaCategory" data-translate-key="select_category">카테고리 선택</label>
+          <select id="qnaCategory" required>
+            <option value="" disabled selected data-translate-key="select_category_placeholder">선택해주세요</option>
+            <option value="과제" data-translate-key="category_homework">과제</option>
+            <option value="학교생활" data-translate-key="category_life">학교생활</option>
+            <option value="기타" data-translate-key="category_etc">기타</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="qnaTitle" data-translate-key="input_title">제목</label>
+          <input type="text" id="qnaTitle" placeholder="질문 제목을 입력하세요" required>
+        </div>
+        <div class="form-group">
+          <label for="qnaContent" data-translate-key="input_content">내용</label>
+          <textarea id="qnaContent" placeholder="질문 내용을 상세히 적어주세요." required style="min-height: 150px;"></textarea>
+        </div>
+        
+        <div class="form-group" style="margin-top: 12px;">
+          <label style="font-weight: 600; font-size: 14px; margin-bottom: 4px;" data-translate-key="attach_image">이미지 첨부</label>
+          <div style="position: relative; border: 2px dashed #cbd5e1; border-radius: var(--radius-md); padding: 16px; text-align: center; cursor: pointer; background-color: #f8fafc; transition: border-color 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)'" onmouseout="this.style.borderColor='#cbd5e1'">
+            <input type="file" id="qnaImage" accept="image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px; color: #64748b; margin: 0 auto 6px;">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            <p style="font-size: 13px; color: #64748b; margin: 0;" id="qnaImageLabel">클릭하여 이미지 파일을 첨부하세요</p>
+            <div id="qnaImagePreviewContainer" style="margin-top: 10px; display: none;">
+              <img id="qnaImagePreview" src="" alt="Preview" style="max-height: 80px; border-radius: 6px; border: 1px solid #e2e8f0; margin: 0 auto;">
+            </div>
+          </div>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 24px;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; font-size: 14px; font-weight: 600; color: var(--color-text-main); margin-right: auto;">
+            <input type="checkbox" id="qnaAnonymous" style="width: 18px; height: 18px; cursor: pointer;">
+            <span data-translate-key="anonymous_mode">익명으로 작성</span>
+          </label>
+          <button type="button" class="submit-btn" id="cancelWriteQnaBtn" style="margin-top: 0; background-color: #cbd5e1; color: #334155;" data-translate-key="cancel_btn">취소</button>
+          <button type="submit" class="submit-btn" style="margin-top: 0;" data-translate-key="submit_btn">등록하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Read Q&A Modal -->
+  <div class="modal-overlay" id="readQnaModal">
+    <div class="modal-content" style="max-width: 1000px; width: 90%; padding: 40px; display: flex; flex-direction: column; height: 85vh;">
+      <button class="modal-close-btn" id="closeReadQnaModal" aria-label="닫기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      
+      <div style="flex-shrink: 0; margin-bottom: 24px; border-bottom: 2px solid var(--color-primary); padding-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 12px;">
+          <h2 id="readQnaTitle" class="modal-title" style="margin: 0; font-size: 26px; color: var(--color-text-main); text-align: left; line-height: 1.3;">제목이 들어갑니다</h2>
+          <div style="display: flex; gap: 8px; flex-shrink: 0;">
+            <button id="qnaDeleteBtn" class="submit-btn" style="background-color: #ef4444; padding: 6px 12px; font-size: 14px; display: none;" data-translate-key="delete_btn">삭제</button>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: var(--color-text-muted);">
+          <div style="display: flex; gap: 16px; align-items: center;">
+            <span style="font-weight: 600;"><span data-translate-key="label_author">작성자</span>: <span id="readQnaAuthor" style="font-weight: 400;">홍길동</span></span>
+            <span style="font-weight: 600;"><span data-translate-key="label_date">등록일</span>: <span id="readQnaDate" style="font-weight: 400;">2026.05.21</span></span>
+            <button id="qnaLikeBtn" class="submit-btn" style="background-color: #f1f5f9; color: var(--color-primary); border: 1px solid var(--color-primary); display: flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 12px; height: auto; border-radius: 6px; margin-left: 8px; cursor: pointer; transition: background-color 0.2s;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+              <span data-translate-key="label_like">추천</span> <span id="qnaLikeCount">0</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; max-height: 250px; overflow-y: auto; padding-right: 8px;">
+        <div id="readQnaContent" style="font-size: 16px; line-height: 1.6; color: var(--color-text-main); white-space: pre-wrap;">
+          여기에 질문 내용이 출력됩니다.
+        </div>
+        <div id="readQnaImageContainer" style="text-align: center; display: none;">
+          <div style="border-top: 1px solid #e2e8f0; margin: 16px 0 24px;"></div>
+          <img id="readQnaImage" src="" alt="Attached Image" style="max-width: 100%; max-height: 200px; border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        </div>
+      </div>
+      
+      <!-- Replies Section -->
+      <div style="flex-grow: 1; overflow-y: hidden; background-color: #f8fafc; border-radius: 12px; padding: 20px; display: flex; flex-direction: column;">
+        <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px; color: var(--color-text-main);"><span data-translate-key="label_answers">답변</span></h3>
+        
+        <!-- Reply Input (Moved to top) -->
+        <div style="display: flex; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px; flex-shrink: 0;">
+          <input type="text" id="qnaReplyInput" placeholder="답변을 입력해주세요..." style="flex-grow: 1; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 14px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--color-primary)'" onblur="this.style.borderColor='#cbd5e1'">
+          <button type="button" id="qnaReplySubmitBtn" class="submit-btn" style="min-width: 80px; padding: 0 16px;" data-translate-key="label_write_btn">작성</button>
+        </div>
+        
+        <div id="qnaRepliesContainer" style="display: flex; flex-direction: column; gap: 16px; flex-grow: 1; overflow-y: auto; padding-right: 8px;">
+          <!-- Reply items will go here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

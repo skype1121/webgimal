@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIXEL KNIGHT ⚔️ — Legendary Survival</title>
+    <meta name="description" content="픽셀 기사의 레전드 서바이벌 RPG. 웨이브를 돌파하고 레벨업하여 가장 강한 기사가 되어라!">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            const div = document.createElement('div');
+            div.style.position = 'fixed';
+            div.style.top = '0';
+            div.style.left = '0';
+            div.style.width = '100%';
+            div.style.background = 'rgba(239, 68, 68, 0.95)';
+            div.style.color = 'white';
+            div.style.zIndex = '999999';
+            div.style.padding = '16px';
+            div.style.fontFamily = 'monospace';
+            div.style.fontSize = '14px';
+            div.style.lineHeight = '1.5';
+            div.style.wordBreak = 'break-all';
+            div.style.boxShadow = '0 4px 12px rgba(0,0,0,0.5)';
+            div.innerHTML = '<strong>[JavaScript Runtime Error]</strong><br>' + 
+                            message + '<br>' +
+                            'Source: ' + source + '<br>' +
+                            'Line: ' + lineno + ' | Col: ' + colno;
+            document.body.appendChild(div);
+            return false;
+        };
+    </script>
+</head>
+<body>
+
+    <!-- Game Canvas (background) -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- ===== TITLE SCREEN ===== -->
+    <div id="title-screen">
+        <div class="title-logo">
+            <span class="title-knight-icon">⚔️</span>
+            <div class="title-logo-main">PIXEL KNIGHT</div>
+            <div class="title-logo-sub">LEGENDARY SURVIVAL</div>
+        </div>
+
+        <div id="title-highscore" class="title-highscore">BEST: 0</div>
+
+        <div class="title-buttons">
+            <button class="title-btn title-btn-start" id="btn-start">[ ENTER ] 게임 시작</button>
+            <button class="title-btn title-btn-tutorial" id="btn-tutorial">[ T ] 튜토리얼</button>
+        </div>
+
+        <div class="title-hint">PRESS ENTER OR CLICK TO START</div>
+    </div>
+
+    <!-- ===== TUTORIAL OVERLAY ===== -->
+    <div id="tutorial-screen">
+        <div class="bubble-step">STEP <span id="tut-step-num">1</span> / 5</div>
+        <div class="bubble-title" id="tut-title">이동하기</div>
+        <div class="bubble-desc" id="tut-desc">
+            <span class="key">W</span> <span class="key">A</span> <span class="key">S</span> <span class="key">D</span> 키로 캐릭터를 이동하세요.<br>
+            방향키도 사용 가능합니다.
+        </div>
+        <div class="tutorial-task" id="tut-task">🎯 맵 끝까지 이동해보세요</div>
+        <button class="bubble-btn" id="tut-next-btn" style="display: none;">다음 [ENTER] →</button>
+    </div>
+
+    <!-- ===== INGAME HUD ===== -->
+    <div id="ingame-hud">
+
+        <!-- Left: HP / MP / XP -->
+        <div class="hud-left">
+            <div class="hud-bar-row">
+                <span class="hud-bar-label hp">HP</span>
+                <div class="hud-bar-track">
+                    <div class="hud-bar-fill hp" id="hp-fill" style="width:100%"></div>
+                </div>
+                <span class="hud-bar-text" id="hp-text">100/100</span>
+            </div>
+            <div class="hud-bar-row">
+                <span class="hud-bar-label mp">MP</span>
+                <div class="hud-bar-track">
+                    <div class="hud-bar-fill mp" id="mp-fill" style="width:100%"></div>
+                </div>
+                <span class="hud-bar-text" id="mp-text">100/100</span>
+            </div>
+            <div class="hud-bar-row">
+                <span class="hud-bar-label xp">XP</span>
+                <div class="hud-bar-track">
+                    <div class="hud-bar-fill xp" id="xp-fill" style="width:0%"></div>
+                </div>
+                <span class="hud-bar-text" id="xp-text">0/100</span>
+            </div>
+            <div class="hud-level">
+                <span class="hud-level-badge" id="hud-level-badge">LV.1</span>
+                <span class="hud-level-info" id="hud-level-info">다음 레벨까지 100XP</span>
+            </div>
+        </div>
+
+        <!-- Center: Wave + Score -->
+        <div class="hud-center">
+            <div class="hud-wave" id="hud-wave">WAVE 1</div>
+            <div class="hud-score" id="hud-score">SCORE: 0</div>
+            <div class="hud-enemy-count" id="hud-enemies">적: 0</div>
+        </div>
+
+        <!-- Bottom-right: Combo -->
+        <div class="hud-combo">
+            <div id="combo-display">x1</div>
+            <div id="combo-label">COMBO</div>
+            <div id="combo-timer-bar">
+                <div id="combo-timer-fill"></div>
+            </div>
+        </div>
+
+        <!-- Bottom-left: Skill slots -->
+        <div class="hud-skills">
+            <div class="skill-slot" id="skill-j">
+                <span class="skill-slot-icon">⚔️</span>
+                <span class="skill-slot-key">J</span>
+                <div class="skill-cd-overlay"><span class="skill-cd-text"></span></div>
+            </div>
+            <div class="skill-slot" id="skill-k">
+                <span class="skill-slot-icon">🔥</span>
+                <span class="skill-slot-key">K</span>
+                <div class="skill-cd-overlay"><span class="skill-cd-text"></span></div>
+            </div>
+            <div class="skill-slot" id="skill-u">
+                <span class="skill-slot-icon">⚡</span>
+                <span class="skill-slot-key">U (HOLD)</span>
+                <div class="skill-cd-overlay"><span class="skill-cd-text"></span></div>
+            </div>
+            <div class="skill-slot" id="skill-i">
+                <span class="skill-slot-icon">❄️</span>
+                <span class="skill-slot-key">I (HOLD)</span>
+                <div class="skill-cd-overlay"><span class="skill-cd-text"></span></div>
+            </div>
+        </div>
+
+        <!-- Controls reminder (small, bottom-center) -->
+        <div style="position:absolute; bottom:14px; left:50%; transform:translateX(-50%); text-align:center; pointer-events:none;">
+            <div style="font-size:0.38rem; color:#1e293b; letter-spacing:2px;">
+                WASD 이동 &nbsp;|&nbsp; J 공격 &nbsp;|&nbsp; K 파이어볼 &nbsp;|&nbsp; U 최후의 섬광 &nbsp;|&nbsp; I 빙결파쇄
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== WAVE CLEAR BANNER ===== -->
+    <div id="wave-clear-banner">
+        <div class="wave-clear-text" id="wave-clear-text">WAVE CLEAR!</div>
+        <div class="wave-clear-sub">다음 웨이브 준비중...</div>
+    </div>
+
+    <!-- ===== GAME CLEAR BANNER ===== -->
+    <div id="game-clear-banner" style="display: none; position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; text-align: center; font-family: monospace; pointer-events: none;">
+        <div style="font-size: 3.5rem; color: #fbbf24; font-weight: bold; text-shadow: 0 0 25px rgba(251, 191, 36, 0.75); letter-spacing: 8px; animation: pulse 1.5s infinite; margin-bottom: 15px;">🏆 GAME CLEAR! 🏆</div>
+        <div style="font-size: 1.2rem; color: #f1f5f9; letter-spacing: 3px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">잠시 후 타이틀 화면으로 이동합니다...</div>
+    </div>
+
+    <!-- ===== WAVE ANNOUNCEMENT ===== -->
+    <div id="wave-announcement">
+        <div class="wave-announce-number" id="wave-announce-num">WAVE 1</div>
+        <div class="wave-announce-sub">START!</div>
+    </div>
+
+    <!-- ===== BOSS WARNING ===== -->
+    <div id="boss-warning">
+        <div class="boss-warning-text">⚠️ BOSS INCOMING ⚠️</div>
+    </div>
+
+    <!-- ===== UPGRADE SCREEN ===== -->
+    <div id="upgrade-screen">
+        <div class="upgrade-title" id="upgrade-wave-title">LEVEL UP!</div>
+        <div class="upgrade-subtitle">업그레이드를 선택하세요</div>
+        <div class="upgrade-cards" id="upgrade-cards-container">
+            <!-- Cards are generated dynamically -->
+        </div>
+        <div style="font-size:0.7rem; color:#64748b; letter-spacing:3px; margin-top:10px;">1 / 2 / 3 키 또는 클릭으로 선택</div>
+    </div>
+
+    <!-- ===== UPGRADE TOAST ===== -->
+    <div id="upgrade-toast">
+        <div class="toast-icon" id="toast-icon">⬆️</div>
+        <div class="toast-name" id="toast-name">업그레이드!</div>
+        <div class="toast-text" id="toast-text">강해졌습니다!</div>
+    </div>
+
+    <!-- ===== GAME OVER SCREEN ===== -->
+    <div id="gameover-screen">
+        <div class="gameover-title">GAME OVER</div>
+        <div class="gameover-rank rank-B" id="gameover-rank">RANK B</div>
+
+        <div class="gameover-stats" id="gameover-stats">
+            <div class="stat-item">
+                <span class="stat-label">SCORE</span>
+                <span class="stat-value" id="go-score">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">WAVE</span>
+                <span class="stat-value" id="go-wave">1</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">KILLS</span>
+                <span class="stat-value" id="go-kills">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">MAX COMBO</span>
+                <span class="stat-value" id="go-combo">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">MAX DAMAGE</span>
+                <span class="stat-value" id="go-maxdmg">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">LEVEL</span>
+                <span class="stat-value" id="go-level">1</span>
+            </div>
+        </div>
+
+        <div class="gameover-highscore" id="gameover-highscore">BEST: 0</div>
+
+        <div class="gameover-buttons">
+            <button class="restart-btn" id="restart-btn">다시 시작</button>
+            <button class="title-return-btn" id="title-btn">타이틀로</button>
+        </div>
+    </div>
+
+    <!-- ===== TUTORIAL RECOMMEND MODAL ===== -->
+    <div id="tutorial-recommend-modal" style="display: none;">
+        <div class="modal-content">
+            <h2 class="modal-title">튜토리얼 권장</h2>
+            <p class="modal-desc">처음이신가요? 조작법과 스킬 사용법을 배우기 위해 튜토리얼을 먼저 진행하시는 것을 강력히 권장합니다.</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-tutorial" id="btn-modal-tutorial">[ 권장 ] 튜토리얼 시작 (ENTER)</button>
+                <button class="modal-btn modal-btn-skip" id="btn-modal-skip">바로 게임 시작 (ESC)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen Transition Overlay -->
+    <div id="screen-transition"></div>
+
+    <script src="app.js?v=2.5.0"></script>
+</body>
+</html>

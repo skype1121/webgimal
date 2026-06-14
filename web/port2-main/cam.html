@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2b57e6">
+  <title>D2반 사진첩 - 스마트 로봇 공학 포털</title>
+  <!-- Google Fonts for premium typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Lightbox customizations */
+    #lightboxModal {
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .photo-thumbnail:hover {
+      transform: scale(1.05);
+    }
+    .delete-photo-btn:hover {
+      background-color: #dc2626 !important;
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body style="background-color: var(--color-bg);">
+
+  <!-- Header Navigation -->
+  <header class="main-header" style="height: 70px; background-color: var(--color-surface); box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100;">
+    <div class="header-container" style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 24px; height: 100%;">
+      <!-- Logo area -->
+      <div class="logo-area" style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="location.href='index.html'">
+        <div class="logo-icon" style="width: 28px; height: 28px; color: var(--color-primary); display: flex; align-items: center;">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+            <rect x="3" y="11" width="18" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+            <circle cx="8.5" cy="16" r="1.5" fill="currentColor"/>
+            <circle cx="15.5" cy="16" r="1.5" fill="currentColor"/>
+            <path d="M8 7V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M16 7V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="8" cy="6" r="1" fill="currentColor"/>
+            <circle cx="16" cy="6" r="1" fill="currentColor"/>
+            <path d="M12 2V5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="12" cy="2" r="1" fill="currentColor"/>
+          </svg>
+        </div>
+        <span class="logo-text" style="font-family: var(--font-primary); font-weight: 700; font-size: 18px; color: var(--color-text-main);">로봇소프트웨어 <span class="highlight" style="color: var(--color-primary);">D2</span></span>
+      </div>
+      
+      <div style="font-size: 18px; font-weight: 700; color: var(--color-text-main); font-family: var(--font-primary);">📸 D2반 사진첩</div>
+      
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <span id="userGreeting" style="font-size: 14px; font-weight: 600; color: var(--color-text-muted);"></span>
+        <a href="index.html" class="submit-btn" style="margin-top: 0; background-color: #cbd5e1; color: #334155; display: flex; align-items: center; gap: 6px; font-weight: 600; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 14px; height: 14px; transform: scaleX(-1);"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          <span>돌아가기</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Gallery Main Container -->
+  <main style="width: 90%; max-width: 1200px; margin: 40px auto; min-height: 70vh;">
+    <!-- Title and Actions -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; border-bottom: 2px solid var(--color-primary); padding-bottom: 16px; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h1 style="font-family: var(--font-primary); font-weight: 800; font-size: clamp(24px, 4vw, 32px); color: var(--color-text-main); text-align: left;">📸 D2 Class Photo Gallery</h1>
+        <p style="color: var(--color-text-muted); font-size: 15px; margin-top: 4px; text-align: left;">D2반 학우들의 소중한 순간과 추억을 자유롭게 공유하고 기록하는 공간입니다.</p>
+      </div>
+      <div>
+        <button id="uploadPhotoBtn" class="submit-btn" style="margin-top: 0; background-color: var(--color-primary); color: white; display: flex; align-items: center; gap: 8px; font-weight: 600; padding: 12px 24px; border-radius: 8px; box-shadow: var(--shadow-sm); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='var(--color-primary-hover)'" onmouseout="this.style.backgroundColor='var(--color-primary)'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 18px; height: 18px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span>사진 공유하기</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- No Photos placeholder -->
+    <div id="noPhotos" style="display: none; text-align: center; padding: 60px 20px; background-color: white; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px dashed #cbd5e1; margin-top: 20px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 64px; height: 64px; color: #94a3b8; margin-bottom: 16px; margin-left: auto; margin-right: auto;">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+        <polyline points="21 15 16 10 5 21"></polyline>
+      </svg>
+      <h3 style="font-size: 18px; font-weight: 700; color: var(--color-text-main); margin-bottom: 8px;">등록된 사진이 없습니다</h3>
+      <p style="color: var(--color-text-muted); font-size: 14px; margin-bottom: 20px;">D2반의 첫 번째 추억을 사진첩에 가장 먼저 올려보세요!</p>
+      <button onclick="document.getElementById('uploadPhotoBtn').click()" class="submit-btn" style="margin-top: 0; background-color: var(--color-primary); padding: 10px 20px; display: inline-flex; align-items: center; gap: 8px;">
+        첫 사진 올리기
+      </button>
+    </div>
+
+    <!-- Photo Grid -->
+    <div id="photoGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-top: 20px;">
+      <!-- Photo cards will be injected dynamically -->
+    </div>
+  </main>
+
+  <!-- Upload Photo Modal -->
+  <div class="modal-overlay" id="uploadModal">
+    <div class="modal-content" style="max-width: 500px; width: 90%;">
+      <button class="modal-close-btn" id="closeUploadModal" aria-label="닫기">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <h2 class="modal-title" style="text-align: left; margin-bottom: 24px; border-bottom: 2px solid var(--color-primary); padding-bottom: 12px; font-size: 22px;">추억 공유하기</h2>
+      <form id="uploadForm" class="login-form">
+        <div class="form-group">
+          <label style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">사진 선택</label>
+          <div style="position: relative; border: 2px dashed #cbd5e1; border-radius: var(--radius-md); padding: 24px; text-align: center; cursor: pointer; background-color: #f8fafc; transition: border-color 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)'" onmouseout="this.style.borderColor='#cbd5e1'">
+            <input type="file" id="photoInput" accept="image/*" required style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 32px; height: 32px; color: #64748b; margin: 0 auto 8px;">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            <p style="font-size: 14px; color: #64748b; margin: 0;" id="photoInputLabel">클릭하여 이미지 파일을 선택하세요</p>
+            <div id="photoPreviewContainer" style="margin-top: 12px; display: none;">
+              <img id="photoPreview" src="" alt="Preview" style="max-height: 150px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 0 auto;">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="photoDescription" style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">사진 설명</label>
+          <textarea id="photoDescription" placeholder="사진에 대한 설명을 입력하세요... (예: 체육대회 우승 기념 단체사진!)" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 80px; resize: vertical; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--color-primary)'" onblur="this.style.borderColor='#cbd5e1'"></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" class="submit-btn" id="cancelUploadBtn" style="background-color: #cbd5e1; color: #334155; margin-top: 0;">취소</button>
+          <button type="submit" class="submit-btn" style="margin-top: 0;">올리기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Lightbox Modal -->
+  <div class="modal-overlay" id="lightboxModal" style="background-color: rgba(0, 0, 0, 0.95); display: flex; align-items: center; justify-content: center;">
+    <div style="position: relative; max-width: 90%; max-height: 90%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <button class="modal-close-btn" id="closeLightboxModal" aria-label="닫기" style="color: white; border: none; background: none; font-size: 32px; cursor: pointer; position: absolute; top: -45px; right: 0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 28px; height: 28px;">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <img id="lightboxImage" src="" alt="Full View" style="max-width: 100%; max-height: 70vh; border-radius: 8px; object-fit: contain; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+      <div style="margin-top: 20px; text-align: center; color: white; width: 100%; max-width: 600px; padding: 0 16px;">
+        <p id="lightboxDescription" style="font-size: 18px; font-weight: 500; line-height: 1.5; white-space: pre-wrap; margin-bottom: 8px; font-family: var(--font-primary);"></p>
+        <p style="font-size: 14px; color: #94a3b8; font-family: var(--font-primary);"><span id="lightboxAuthor">작성자</span> • <span id="lightboxDate">날짜</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    // Firebase Config from script.js
+    const firebaseConfig = {
+      apiKey: "AIzaSyDUvuXIUdDAl4qS6aUocgYPE19ChlDnmdM",
+      authDomain: "gimal-d459c.firebaseapp.com",
+      databaseURL: "https://gimal-d459c-default-rtdb.firebaseio.com",
+      projectId: "gimal-d459c",
+      storageBucket: "gimal-d459c.firebasestorage.app",
+      messagingSenderId: "265728737832",
+      appId: "1:265728737832:web:da73d3ba376c2dc32deb1d",
+      measurementId: "G-L6XZD2QMSD"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Helper functions
+    const getCurrentUserId = () => {
+      const studentId = localStorage.getItem('studentId');
+      return studentId || null;
+    };
+    
+    const getCurrentUserName = () => {
+      const studentName = localStorage.getItem('studentName');
+      return studentName || '익명';
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // User greeting logic
+      const storedStudentId = localStorage.getItem('studentId');
+      const storedStudentName = localStorage.getItem('studentName');
+      const userGreeting = document.getElementById('userGreeting');
+      if (storedStudentId && storedStudentName && userGreeting) {
+        userGreeting.textContent = `${storedStudentName}(${storedStudentId})님`;
+      }
+
+      // Modals setup
+      const uploadModal = document.getElementById('uploadModal');
+      const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+      const closeUploadModal = document.getElementById('closeUploadModal');
+      const cancelUploadBtn = document.getElementById('cancelUploadBtn');
+      const uploadForm = document.getElementById('uploadForm');
+
+      const lightboxModal = document.getElementById('lightboxModal');
+      const closeLightboxModal = document.getElementById('closeLightboxModal');
+
+      // Image attachment state
+      let photoData = null;
+
+      // Reset upload modal
+      const closeUpload = () => {
+        uploadModal.classList.remove('active');
+        uploadForm.reset();
+        photoData = null;
+        document.getElementById('photoInputLabel').textContent = '클릭하여 이미지 파일을 선택하세요';
+        document.getElementById('photoPreviewContainer').style.display = 'none';
+        document.getElementById('photoPreview').src = '';
+      };
+
+      if (uploadPhotoBtn) {
+        uploadPhotoBtn.addEventListener('click', () => {
+          if (!getCurrentUserId()) {
+            alert('로그인이 필요한 서비스입니다.');
+            return;
+          }
+          uploadModal.classList.add('active');
+        });
+      }
+
+      if (closeUploadModal) closeUploadModal.addEventListener('click', closeUpload);
+      if (cancelUploadBtn) cancelUploadBtn.addEventListener('click', closeUpload);
+      uploadModal.addEventListener('click', (e) => {
+        if (e.target === uploadModal) closeUpload();
+      });
+
+      // Lightbox close
+      const closeLightbox = () => {
+        lightboxModal.classList.remove('active');
+      };
+      if (closeLightboxModal) closeLightboxModal.addEventListener('click', closeLightbox);
+      lightboxModal.addEventListener('click', (e) => {
+        if (e.target === lightboxModal) closeLightbox();
+      });
+
+      // Handle Image selection and canvas compression
+      const photoInput = document.getElementById('photoInput');
+      const photoInputLabel = document.getElementById('photoInputLabel');
+      const photoPreviewContainer = document.getElementById('photoPreviewContainer');
+      const photoPreview = document.getElementById('photoPreview');
+
+      if (photoInput) {
+        photoInput.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (!file) {
+            photoInputLabel.textContent = '클릭하여 이미지 파일을 선택하세요';
+            photoPreviewContainer.style.display = 'none';
+            photoPreview.src = '';
+            photoData = null;
+            return;
+          }
+
+          if (!file.type.startsWith('image/')) {
+            alert('이미지 파일만 선택할 수 있습니다.');
+            photoInput.value = '';
+            return;
+          }
+
+          photoInputLabel.textContent = file.name;
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              let width = img.width;
+              let height = img.height;
+              const max_size = 800;
+
+              if (width > height) {
+                if (width > max_size) {
+                  height *= max_size / width;
+                  width = max_size;
+                }
+              } else {
+                if (height > max_size) {
+                  width *= max_size / height;
+                  height = max_size;
+                }
+              }
+
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+              photoPreview.src = dataUrl;
+              photoPreviewContainer.style.display = 'block';
+              photoData = dataUrl;
+            };
+            img.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      // Handle photo upload form submission
+      if (uploadForm) {
+        uploadForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          if (!photoData) {
+            alert('사진을 선택해 주세요.');
+            return;
+          }
+
+          const submitBtn = uploadForm.querySelector('button[type="submit"]');
+          submitBtn.disabled = true;
+          submitBtn.textContent = '올리는 중...';
+
+          try {
+            const description = document.getElementById('photoDescription').value;
+            const author = getCurrentUserName();
+            const authorId = getCurrentUserId();
+            
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
+
+            await db.collection("cam_photos").add({
+              description: description,
+              author: author,
+              authorId: authorId,
+              dateStr: dateStr,
+              imageData: photoData,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            await loadPhotos();
+            closeUpload();
+          } catch (error) {
+            console.error("Error saving photo:", error);
+            alert('사진 등록 중 오류가 발생했습니다.');
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '올리기';
+          }
+        });
+      }
+
+      // Load initial photo gallery
+      loadPhotos();
+    });
+
+    async function loadPhotos() {
+      const photoGrid = document.getElementById('photoGrid');
+      const noPhotos = document.getElementById('noPhotos');
+      if (!photoGrid || !noPhotos) return;
+
+      try {
+        const querySnapshot = await db.collection("cam_photos").orderBy("createdAt", "desc").get();
+        
+        if (querySnapshot.empty) {
+          photoGrid.innerHTML = '';
+          noPhotos.style.display = 'block';
+          return;
+        }
+        
+        noPhotos.style.display = 'none';
+        photoGrid.innerHTML = '';
+        
+        const currentUserId = getCurrentUserId();
+        const storedStudentName = localStorage.getItem('studentName') || '';
+
+        querySnapshot.forEach((doc) => {
+          const photoId = doc.id;
+          const data = doc.data();
+          const description = data.description || '';
+          const author = data.author || '';
+          const authorId = data.authorId || '';
+          const dateStr = data.dateStr || '';
+          const imageData = data.imageData || '';
+          
+          const card = document.createElement('div');
+          card.style.cssText = `
+            background-color: var(--color-surface);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition-spring);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+          `;
+          
+          // Add hover effects
+          card.addEventListener('mouseenter', () => {
+            card.style.transform = 'translateY(-6px)';
+            card.style.boxShadow = 'var(--shadow-lg)';
+          });
+          card.addEventListener('mouseleave', () => {
+            card.style.transform = 'translateY(0)';
+            card.style.boxShadow = 'var(--shadow-md)';
+          });
+
+          // Delete button
+          let deleteBtnHtml = '';
+          if (currentUserId && (authorId === currentUserId || author === storedStudentName || currentUserId === 'admin' || storedStudentName.includes('관리'))) {
+            deleteBtnHtml = `
+              <button class="delete-photo-btn" data-id="${photoId}" style="
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                background-color: rgba(239, 68, 68, 0.9);
+                color: white;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.2s;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                z-index: 2;
+                border: none;
+              " title="삭제">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 14px; height: 14px;">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            `;
+          }
+
+          card.innerHTML = `
+            <div style="position: relative; padding-top: 75%; overflow: hidden; background-color: #f1f5f9; cursor: pointer;" class="photo-img-wrapper">
+              <img src="${imageData}" alt="Photo" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" class="photo-thumbnail">
+              <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 50%); pointer-events: none;"></div>
+            </div>
+            ${deleteBtnHtml}
+            <div style="padding: 16px; display: flex; flex-direction: column; flex-grow: 1;">
+              <p style="font-size: 15px; font-weight: 600; color: var(--color-text-main); margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; text-align: left; min-height: 42px;">
+                ${description}
+              </p>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; font-size: 13px; color: var(--color-text-muted); border-top: 1px solid #f1f5f9; padding-top: 12px;">
+                <span style="font-weight: 500;">By ${author}</span>
+                <span>${dateStr}</span>
+              </div>
+            </div>
+          `;
+          
+          // Open lightbox when clicking the image wrapper
+          card.querySelector('.photo-img-wrapper').addEventListener('click', () => {
+            const lightboxImage = document.getElementById('lightboxImage');
+            const lightboxDescription = document.getElementById('lightboxDescription');
+            const lightboxAuthor = document.getElementById('lightboxAuthor');
+            const lightboxDate = document.getElementById('lightboxDate');
+            
+            if (lightboxModal && lightboxImage && lightboxDescription && lightboxAuthor && lightboxDate) {
+              lightboxImage.src = imageData;
+              lightboxDescription.textContent = description;
+              lightboxAuthor.textContent = `작성자: ${author}`;
+              lightboxDate.textContent = `등록일: ${dateStr}`;
+              lightboxModal.classList.add('active');
+            }
+          });
+
+          // Hover scale effect on the thumbnail image
+          const imgWrapper = card.querySelector('.photo-img-wrapper');
+          const imgEl = card.querySelector('.photo-thumbnail');
+          imgWrapper.addEventListener('mouseenter', () => {
+            imgEl.style.transform = 'scale(1.05)';
+          });
+          imgWrapper.addEventListener('mouseleave', () => {
+            imgEl.style.transform = 'scale(1.0)';
+          });
+
+          // Handle deletion
+          const delBtn = card.querySelector('.delete-photo-btn');
+          if (delBtn) {
+            delBtn.addEventListener('click', async (e) => {
+              e.stopPropagation();
+              if (confirm('이 사진을 사진첩에서 삭제하시겠습니까?')) {
+                try {
+                  await db.collection("cam_photos").doc(photoId).delete();
+                  loadPhotos();
+                } catch (err) {
+                  console.error("Error deleting photo:", err);
+                  alert("삭제 중 오류가 발생했습니다.");
+                }
+              }
+            });
+          }
+
+          photoGrid.appendChild(card);
+        });
+      } catch (err) {
+        console.error("Error fetching photos:", err);
+      }
+    }
+  </script>
+</body>
+</html>

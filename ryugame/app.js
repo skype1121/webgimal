@@ -7434,6 +7434,7 @@ function resizeGameCanvas() {
     gameCanvas.width = window.innerWidth;
     gameCanvas.height = window.innerHeight;
     // Map size is now fixed for the background arena image.
+    checkMobileLayout();
 }
 
 window.addEventListener('resize', resizeGameCanvas);
@@ -7494,6 +7495,7 @@ function setHighScore(s) {
 // ============================================================
 function triggerGameClear() {
     gameState = 'GAMEOVER'; // stop update processing loop
+    checkMobileLayout();
     
     // Clear all lingering ice spikes
     gameEffects = gameEffects.filter(e => !(e instanceof LastBossIceSpike));
@@ -7576,6 +7578,7 @@ function showTitleScreen() {
     
     // Play title screen BGM
     playBGM('sound/Movie Theater Intro.mp3');
+    checkMobileLayout();
 }
 
 function tryStartGame() {
@@ -7585,6 +7588,7 @@ function tryStartGame() {
     } else {
         startPlayingGame();
     }
+    checkMobileLayout();
 }
 
 function showIngameHud() {
@@ -7893,6 +7897,7 @@ function triggerLevelUp() {
 function showUpgradeScreen() {
     gameState = 'UPGRADE';
     upgradeScreen.style.display = 'flex';
+    checkMobileLayout();
 
     const title = document.getElementById('upgrade-wave-title');
     if (title) title.textContent = `LV.${playerLevel} UPGRADE!`;
@@ -7954,6 +7959,7 @@ function selectUpgrade(idx) {
 
     // Heal a bit on level up
     player.hp = Math.min(player.maxHp, player.hp + 15);
+    checkMobileLayout();
 }
 
 // ============================================================
@@ -8127,6 +8133,7 @@ function startTutorial() {
         
         // Play game BGM
         playBGM('sound/game.mp3');
+        checkMobileLayout();
         
         isTransitioning = false;
     });
@@ -8291,6 +8298,7 @@ function startPlayingGame() {
         
         // Play game BGM
         playBGM('sound/game.mp3');
+        checkMobileLayout();
         
         isTransitioning = false;
     });
@@ -8329,6 +8337,7 @@ function triggerGameOver() {
 
     gameoverScreen.style.display = 'flex';
     ingameHud.style.display = 'none';
+    checkMobileLayout();
 }
 
 let lastUpgradesUIString = "";
@@ -8700,6 +8709,7 @@ function resetGame() {
 }
 
 function startGame() {
+    initMobileControls();
     resizeGameCanvas();
     lastTime = performance.now();
     showTitleScreen();
@@ -8821,6 +8831,180 @@ function drawTitleBackground() {
         gameCtx.shadowBlur = 6;
         gameCtx.fillRect(p.x, p.y, p.size, p.size);
         gameCtx.restore();
+    });
+}
+
+function checkMobileLayout() {
+    const isSmallScreen = window.innerWidth <= 1024 || window.innerHeight <= 600;
+    const isPlaying = (gameState === 'PLAYING' || gameState === 'TUTORIAL');
+    
+    if (isSmallScreen && isPlaying) {
+        document.body.classList.add('mobile-mode-active');
+    } else {
+        document.body.classList.remove('mobile-mode-active');
+    }
+}
+
+function initMobileControls() {
+    const joystickBase = document.getElementById('joystick-base');
+    const joystickKnob = document.getElementById('joystick-knob');
+    if (!joystickBase || !joystickKnob) return;
+
+    let draggingJoystick = false;
+    let centerX = 0;
+    let centerY = 0;
+    let maxDistance = 0;
+
+    function startDrag(clientX, clientY) {
+        draggingJoystick = true;
+        const rect = joystickBase.getBoundingClientRect();
+        centerX = rect.left + rect.width / 2;
+        centerY = rect.top + rect.height / 2;
+        maxDistance = rect.width / 2;
+        getAudioContext();
+        moveKnob(clientX, clientY);
+    }
+
+    function moveKnob(clientX, clientY) {
+        if (!draggingJoystick) return;
+        let dx = clientX - centerX;
+        let dy = clientY - centerY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance > maxDistance) {
+            dx = (dx / distance) * maxDistance;
+            dy = (dy / distance) * maxDistance;
+        }
+
+        joystickKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+
+        const threshold = maxDistance * 0.25;
+
+        // Map X axis
+        if (dx > threshold) {
+            keys.right = true;
+            keys.left = false;
+        } else if (dx < -threshold) {
+            keys.left = true;
+            keys.right = false;
+        } else {
+            keys.left = false;
+            keys.right = false;
+        }
+
+        // Map Y axis
+        if (dy > threshold) {
+            keys.down = true;
+            keys.up = false;
+        } else if (dy < -threshold) {
+            keys.up = true;
+            keys.down = false;
+        } else {
+            keys.up = false;
+            keys.down = false;
+        }
+
+        if (tutorialActive && (keys.up || keys.down || keys.left || keys.right)) {
+            tutorialMoved = true;
+        }
+    }
+
+    function endDrag() {
+        if (!draggingJoystick) return;
+        draggingJoystick = false;
+        joystickKnob.style.transform = 'translate(-50%, -50%)';
+        keys.up = false;
+        keys.down = false;
+        keys.left = false;
+        keys.right = false;
+    }
+
+    // Touch event listeners for joystick
+    joystickBase.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        startDrag(touch.clientX, touch.clientY);
+    });
+
+    window.addEventListener('touchmove', (e) => {
+        if (!draggingJoystick) return;
+        const touch = e.touches[0];
+        moveKnob(touch.clientX, touch.clientY);
+    }, { passive: false });
+
+    window.addEventListener('touchend', (e) => {
+        endDrag();
+    });
+
+    window.addEventListener('touchcancel', (e) => {
+        endDrag();
+    });
+
+    // Mouse event listeners for joystick (allows testing on desktop browser with narrow viewport)
+    joystickBase.addEventListener('mousedown', (e) => {
+        if (e.button === 0) {
+            startDrag(e.clientX, e.clientY);
+        }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (draggingJoystick) {
+            moveKnob(e.clientX, e.clientY);
+        }
+    });
+
+    window.addEventListener('mouseup', (e) => {
+        if (e.button === 0) {
+            endDrag();
+        }
+    });
+
+    // Action buttons mappings
+    const buttonMappings = [
+        { id: 'btn-mobile-attack', keyName: 'attack' },
+        { id: 'btn-mobile-magic', keyName: 'magic' },
+        { id: 'btn-mobile-magicfinish', keyName: 'magicFinish' },
+        { id: 'btn-mobile-finish', keyName: 'finish' }
+    ];
+
+    buttonMappings.forEach(mapping => {
+        const btn = document.getElementById(mapping.id);
+        if (!btn) return;
+
+        // Touch handlers
+        btn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            getAudioContext();
+            keys[mapping.keyName] = true;
+        });
+
+        btn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            keys[mapping.keyName] = false;
+        });
+
+        btn.addEventListener('touchcancel', (e) => {
+            e.preventDefault();
+            keys[mapping.keyName] = false;
+        });
+
+        // Mouse handlers
+        btn.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                getAudioContext();
+                keys[mapping.keyName] = true;
+            }
+        });
+
+        btn.addEventListener('mouseup', (e) => {
+            if (e.button === 0) {
+                keys[mapping.keyName] = false;
+            }
+        });
+
+        btn.addEventListener('mouseleave', () => {
+            keys[mapping.keyName] = false;
+        });
     });
 }
 

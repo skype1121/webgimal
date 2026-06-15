@@ -8468,7 +8468,7 @@ window.addEventListener('keydown', (e) => {
         cheatKeys.n.count++;
         cheatKeys.n.lastTime = now;
         
-        if (cheatKeys.n.count === 3) {
+        if (cheatKeys.n.count === 6) {
             player.isDebugMode = !player.isDebugMode;
             showNotification(`무적 모드: ${player.isDebugMode ? 'ON' : 'OFF'}`);
             cheatKeys.n.count = 0;
@@ -8482,7 +8482,7 @@ window.addEventListener('keydown', (e) => {
         cheatKeys.m.count++;
         cheatKeys.m.lastTime = now;
         
-        if (cheatKeys.m.count === 3) {
+        if (cheatKeys.m.count === 6) {
             if (gameState === 'PLAYING') {
                 ghosts = [];
                 gameEffects = [];

@@ -8459,42 +8459,7 @@ window.addEventListener('keydown', (e) => {
 
     const key = e.key.toLowerCase();
 
-    // Cheat Keys detection
-    const now = Date.now();
-    if (key === 'n') {
-        if (now - cheatKeys.n.lastTime > 1500) {
-            cheatKeys.n.count = 0;
-        }
-        cheatKeys.n.count++;
-        cheatKeys.n.lastTime = now;
-        
-        if (cheatKeys.n.count === 6) {
-            player.isDebugMode = !player.isDebugMode;
-            showNotification(`무적 모드: ${player.isDebugMode ? 'ON' : 'OFF'}`);
-            cheatKeys.n.count = 0;
-        }
-    }
-    
-    if (key === 'm') {
-        if (now - cheatKeys.m.lastTime > 1500) {
-            cheatKeys.m.count = 0;
-        }
-        cheatKeys.m.count++;
-        cheatKeys.m.lastTime = now;
-        
-        if (cheatKeys.m.count === 6) {
-            if (gameState === 'PLAYING') {
-                ghosts = [];
-                gameEffects = [];
-                bossSpawned = false;
-                if (waveClearBanner) waveClearBanner.classList.remove('show');
-                if (waveAnnounce) waveAnnounce.classList.remove('show');
-                startWave(10);
-                showNotification("스테이지 10 이동!");
-            }
-            cheatKeys.m.count = 0;
-        }
-    }
+
 
     // Tutorial Recommendation Modal shortcuts
     if (gameState === 'TUTORIAL_MODAL') {

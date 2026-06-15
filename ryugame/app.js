@@ -8208,14 +8208,11 @@ function updateTutorial(dt) {
         const isMobileActive = document.body.classList.contains('mobile-mode-active');
         const zoomFactor = isMobileActive ? 0.75 : 1.0;
         
-        const screenCenterX = gameCanvas.width / 2;
-        const screenCenterY = gameCanvas.height / 2;
-        
         const worldCenterX = instructor.x + instructor.width / 2;
         const worldCenterY = instructor.y;
         
-        const screenX = screenCenterX + (worldCenterX - camera.x - screenCenterX) * zoomFactor;
-        const screenY = screenCenterY + (worldCenterY - camera.y - screenCenterY) * zoomFactor;
+        const screenX = (worldCenterX - camera.x) * zoomFactor;
+        const screenY = (worldCenterY - camera.y) * zoomFactor;
         
         tutorialScreen.style.left = `${screenX}px`;
         tutorialScreen.style.top = `${screenY - 35 * zoomFactor}px`; // Anchor above instructor name tag
@@ -8806,15 +8803,12 @@ function gameLoop(time) {
         const isMobileActive = document.body.classList.contains('mobile-mode-active');
         const zoomFactor = isMobileActive ? 0.75 : 1.0;
         
-        if (zoomFactor !== 1.0) {
-            const screenCenterX = gameCanvas.width / 2;
-            const screenCenterY = gameCanvas.height / 2;
-            gameCtx.translate(screenCenterX, screenCenterY);
-            gameCtx.scale(zoomFactor, zoomFactor);
-            gameCtx.translate(-screenCenterX, -screenCenterY);
-        }
+        const viewportW = gameCanvas.width / zoomFactor;
+        const viewportH = gameCanvas.height / zoomFactor;
         
-        gameCtx.translate(sx - camera.x, sy - camera.y);
+        gameCtx.translate(gameCanvas.width / 2 + sx, gameCanvas.height / 2 + sy);
+        gameCtx.scale(zoomFactor, zoomFactor);
+        gameCtx.translate(-viewportW / 2 - camera.x, -viewportH / 2 - camera.y);
         background.draw();
         ghosts.forEach(g => g.draw());
         player.draw();
@@ -8950,25 +8944,57 @@ function initMobileControls() {
         keys.right = false;
     }
 
+    let joystickTouchId = null;
+
     // Touch event listeners for joystick
     joystickBase.addEventListener('touchstart', (e) => {
         e.preventDefault();
-        const touch = e.touches[0];
+        if (draggingJoystick) return;
+        const touch = e.changedTouches[0];
+        joystickTouchId = touch.identifier;
         startDrag(touch.clientX, touch.clientY);
     });
 
     window.addEventListener('touchmove', (e) => {
         if (!draggingJoystick) return;
-        const touch = e.touches[0];
-        moveKnob(touch.clientX, touch.clientY);
+        let joystickTouch = null;
+        for (let i = 0; i < e.touches.length; i++) {
+            if (e.touches[i].identifier === joystickTouchId) {
+                joystickTouch = e.touches[i];
+                break;
+            }
+        }
+        if (joystickTouch) {
+            moveKnob(joystickTouch.clientX, joystickTouch.clientY);
+        }
     }, { passive: false });
 
     window.addEventListener('touchend', (e) => {
-        endDrag();
+        let ended = false;
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === joystickTouchId) {
+                ended = true;
+                break;
+            }
+        }
+        if (ended) {
+            endDrag();
+            joystickTouchId = null;
+        }
     });
 
     window.addEventListener('touchcancel', (e) => {
-        endDrag();
+        let ended = false;
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === joystickTouchId) {
+                ended = true;
+                break;
+            }
+        }
+        if (ended) {
+            endDrag();
+            joystickTouchId = null;
+        }
     });
 
     // Mouse event listeners for joystick (allows testing on desktop browser with narrow viewport)

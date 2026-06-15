@@ -471,13 +471,22 @@ const camera = {
     x: 0,
     y: 0,
     update() {
+        const isMobileActive = document.body.classList.contains('mobile-mode-active');
+        const zoomFactor = isMobileActive ? 0.75 : 1.0;
+        
+        const viewportW = gameCanvas.width / zoomFactor;
+        const viewportH = gameCanvas.height / zoomFactor;
+        
         // Target is centered on player
-        const targetX = player.x + player.width / 2 - gameCanvas.width / 2;
-        const targetY = player.y + player.height / 2 - gameCanvas.height / 2;
+        const targetX = player.x + player.width / 2 - viewportW / 2;
+        const targetY = player.y + player.height / 2 - viewportH / 2;
         
         // Clamp to world bounds
-        this.x = Math.max(0, Math.min(WORLD_WIDTH - gameCanvas.width, targetX));
-        this.y = Math.max(0, Math.min(WORLD_HEIGHT - gameCanvas.height, targetY));
+        const maxCamX = Math.max(0, WORLD_WIDTH - viewportW);
+        const maxCamY = Math.max(0, WORLD_HEIGHT - viewportH);
+        
+        this.x = Math.max(0, Math.min(maxCamX, targetX));
+        this.y = Math.max(0, Math.min(maxCamY, targetY));
     }
 };
 
@@ -8196,10 +8205,20 @@ function updateTutorial(dt) {
 
     // Position speech bubble above instructor's head dynamically
     if (tutorialScreen && instructor) {
-        const screenX = instructor.x + instructor.width / 2 - camera.x;
-        const screenY = instructor.y - camera.y;
+        const isMobileActive = document.body.classList.contains('mobile-mode-active');
+        const zoomFactor = isMobileActive ? 0.75 : 1.0;
+        
+        const screenCenterX = gameCanvas.width / 2;
+        const screenCenterY = gameCanvas.height / 2;
+        
+        const worldCenterX = instructor.x + instructor.width / 2;
+        const worldCenterY = instructor.y;
+        
+        const screenX = screenCenterX + (worldCenterX - camera.x - screenCenterX) * zoomFactor;
+        const screenY = screenCenterY + (worldCenterY - camera.y - screenCenterY) * zoomFactor;
+        
         tutorialScreen.style.left = `${screenX}px`;
-        tutorialScreen.style.top = `${screenY - 35}px`; // Anchor above instructor name tag
+        tutorialScreen.style.top = `${screenY - 35 * zoomFactor}px`; // Anchor above instructor name tag
     }
 
     // Keep spawning tutorial enemies only starting from Step 1 (기본 검격)
@@ -8783,6 +8802,18 @@ function gameLoop(time) {
 
     if (isPlaying) {
         gameCtx.save();
+        
+        const isMobileActive = document.body.classList.contains('mobile-mode-active');
+        const zoomFactor = isMobileActive ? 0.75 : 1.0;
+        
+        if (zoomFactor !== 1.0) {
+            const screenCenterX = gameCanvas.width / 2;
+            const screenCenterY = gameCanvas.height / 2;
+            gameCtx.translate(screenCenterX, screenCenterY);
+            gameCtx.scale(zoomFactor, zoomFactor);
+            gameCtx.translate(-screenCenterX, -screenCenterY);
+        }
+        
         gameCtx.translate(sx - camera.x, sy - camera.y);
         background.draw();
         ghosts.forEach(g => g.draw());

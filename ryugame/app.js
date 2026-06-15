@@ -57,6 +57,64 @@ let dtScale = 1;
 let bossSpawned = false;
 let bossWarningTimer = 0;
 
+// Cheat Key tracking
+let cheatKeys = {
+    n: { count: 0, lastTime: 0 },
+    m: { count: 0, lastTime: 0 }
+};
+
+let screenDarkness = 0;
+
+function showNotification(msg) {
+    const container = document.getElementById('cheat-notification-container') || (() => {
+        const div = document.createElement('div');
+        div.id = 'cheat-notification-container';
+        div.style.position = 'absolute';
+        div.style.top = '20px';
+        div.style.left = '50%';
+        div.style.transform = 'translateX(-50%)';
+        div.style.zIndex = '9999';
+        div.style.display = 'flex';
+        div.style.flexDirection = 'column';
+        div.style.alignItems = 'center';
+        div.style.pointerEvents = 'none';
+        document.body.appendChild(div);
+        return div;
+    })();
+    
+    const notif = document.createElement('div');
+    notif.textContent = msg;
+    notif.style.background = 'rgba(15, 23, 42, 0.85)';
+    notif.style.color = '#00f5ff';
+    notif.style.border = '1px solid #00f5ff';
+    notif.style.padding = '8px 16px';
+    notif.style.margin = '4px';
+    notif.style.borderRadius = '4px';
+    notif.style.fontFamily = 'monospace';
+    notif.style.fontWeight = 'bold';
+    notif.style.fontSize = '14px';
+    notif.style.boxShadow = '0 0 10px rgba(0, 245, 255, 0.5)';
+    notif.style.opacity = '0';
+    notif.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    notif.style.transform = 'translateY(-10px)';
+    
+    container.appendChild(notif);
+    
+    // Force reflow
+    notif.offsetHeight;
+    
+    notif.style.opacity = '1';
+    notif.style.transform = 'translateY(0)';
+    
+    setTimeout(() => {
+        notif.style.opacity = '0';
+        notif.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            notif.remove();
+        }, 300);
+    }, 2000);
+}
+
 // ============================================================
 // WAVE SYSTEM
 // ============================================================
@@ -215,10 +273,10 @@ const UPGRADE_POOL = [
     },
     {
         id: 'vampiric', icon: '🩸', name: '흡혈',
-        desc: '공격 데미지의 6%\n를 HP로 흡수',
-        value: '공격 시 6% 흡혈',
+        desc: '공격 데미지의 3%\n를 HP로 흡수',
+        value: '공격 시 3% 흡혈',
         color: '#c026d3', rgb: '192,38,211',
-        apply: () => { upgrades.lifeSteal += 0.06; }
+        apply: () => { upgrades.lifeSteal += 0.03; }
     },
     {
         id: 'maxhp', icon: '🛡️', name: '강인한 육체',
@@ -1696,12 +1754,12 @@ class SwordSlash {
             if (effect instanceof LastBossIceSpike && effect.active && effect.state === 'holding') {
                 const spikeRect = {
                     x: effect.x - effect.w / 2,
-                    y: effect.y - effect.h * 0.85,
+                    y: effect.y - effect.h * 0.85 - 60, // Extend vertically up by 60px
                     w: effect.w,
-                    h: effect.h
+                    h: effect.h + 120 // Extend total vertical height by 120px to cover top-down height alignment
                 };
                 if (rectOverlap(slashRect, spikeRect)) {
-                    effect.takeDamage(1);
+                    effect.takeDamage(1, 'sword');
                 }
             }
         });
@@ -1838,12 +1896,12 @@ class Fireball {
                 if (effect instanceof LastBossIceSpike && effect.active && effect.state === 'holding') {
                     const spikeRect = {
                         x: effect.x - effect.w / 2,
-                        y: effect.y - effect.h * 0.85,
+                        y: effect.y - effect.h * 0.85 - 60, // Extend vertically up by 60px
                         w: effect.w,
-                        h: effect.h
+                        h: effect.h + 120 // Extend total vertical height by 120px to cover top-down height alignment
                     };
                     if (rectOverlap(fireballRect, spikeRect)) {
-                        effect.takeDamage(1);
+                        effect.takeDamage(3, 'magic');
                         this.active = false;
                         
                         // Exploding fire particles
@@ -1911,6 +1969,16 @@ class UltimateShockwave {
                     const baseDmg = 200;
                     const damage = isCrit ? Math.round(baseDmg * 1.6) : baseDmg;
                     ghost.takeDamage(damage, 0, 0, false, false, isCrit);
+                }
+            }
+        });
+        
+        // Hit ice spikes within radius
+        gameEffects.forEach(effect => {
+            if (effect instanceof LastBossIceSpike && effect.active && effect.state === 'holding') {
+                const dist = Math.hypot(effect.x - this.x, effect.y - this.y);
+                if (dist < this.radius) {
+                    effect.takeDamage(3, 'finish'); // Deal 3 damage to break the spike
                 }
             }
         });
@@ -2223,7 +2291,8 @@ class IceSpike {
                         else if (this.facing === 'down') ky = 1;
                         
                         // Apply damage. Scaled up slightly since hits are now properly throttled.
-                        ghost.takeDamage(15, kx * 0.36, ky * 0.36, true, true);
+                        const finalDmg = Math.round(15 * (typeof upgrades !== 'undefined' ? upgrades.iceDamage : 1.0));
+                        ghost.takeDamage(finalDmg, kx * 0.36, ky * 0.36, true, true);
                         ghost.isFrozen = true;
                         ghost.frozenTime = 3000; // 3 seconds freeze
                         
@@ -2367,7 +2436,7 @@ class LastBossIceSpike {
         this.frameTimeAcc = 0;
         this.fps = 15; // Play 30 frames at 15 FPS (exactly 2.0 seconds duration)
         this.active = true;
-        this.hp = 1; // Health pool of the ice spike
+        this.hp = 3; // Health pool of the ice spike
         
         this.scale = scale; // Dynamic scale factor for gradual growth
         this.targetHoldFrame = targetHoldFrame; // Dynamic peak frame for holding
@@ -2388,6 +2457,17 @@ class LastBossIceSpike {
         // Tick damage variables
         this.damageTimer = 0;
         this.damageInterval = 75; // Tick damage every 75ms while holding at peak
+    }
+    
+    getCollisionBox() {
+        const hw = this.w * 0.22;
+        const hh = this.h * 0.12;
+        return {
+            x: this.x - hw,
+            y: this.y - hh * 0.8,
+            w: hw * 2,
+            h: hh
+        };
     }
     
     update(dt) {
@@ -2438,13 +2518,8 @@ class LastBossIceSpike {
         const now = Date.now();
         const pHbox = player.getHitbox();
         
-        // Target hitbox of the spike (slender vertical rectangle representing the ice column)
-        const spikeHbox = {
-            x: this.x - this.w * 0.20,
-            y: this.y - this.h * 0.80,
-            w: this.w * 0.40,
-            h: this.h * 0.80
-        };
+        // Target hitbox of the spike (narrow base box)
+        const spikeHbox = this.getCollisionBox();
         
         // AABB Collision check
         const isColliding = (
@@ -2498,8 +2573,24 @@ class LastBossIceSpike {
         }
     }
     
-    takeDamage(dmg) {
+    takeDamage(dmg, source = 'sword') {
         this.hp -= dmg;
+        
+        // Lifesteal on hit
+        if (typeof upgrades !== 'undefined' && upgrades.lifeSteal > 0) {
+            let baseDmg = SWORD_DAMAGE;
+            if (source === 'magic') {
+                const fbMult = typeof upgrades !== 'undefined' ? upgrades.fireballDamage : 1.0;
+                baseDmg = 75 * fbMult;
+            } else if (source === 'finish') {
+                baseDmg = 350; // Ultimate damage base
+            }
+            const mult = (source === 'magic') ? 1.0 : (typeof upgrades !== 'undefined' ? upgrades.swordDamage : 1.0);
+            const finalDmg = baseDmg * mult;
+            const healAmount = finalDmg * upgrades.lifeSteal;
+            player.hp = Math.min(player.maxHp, player.hp + healAmount);
+        }
+        
         if (this.hp <= 0) {
             this.active = false;
             // Spawn shatter particles
@@ -5004,7 +5095,9 @@ class LastBoss {
         this.flashTime = 0;
         this.knockbackX = 0;
         this.knockbackY = 0;
-        this.spawnTime = 1200;
+        this.spawnTime = 1800;
+        this.spawnMaxTime = 1800;
+        this.landedEffectTriggered = false;
         
         if (startX !== undefined && startY !== undefined) {
             this.x = startX;
@@ -5024,6 +5117,10 @@ class LastBoss {
         this.facing = 'down';
         this.hidden = false;
         this.thunderFlashCooldown = 0;
+        this.instantKillCooldown = 0;
+        this.lockOnLine = null;
+        this.strafeDirection = Math.random() < 0.5 ? 1 : -1;
+        this.strafeTimer = 1500;
         
         // Play lastboss BGM
         playBGM('lastboss/lastbgm.mp3', 0.5);
@@ -5148,8 +5245,69 @@ class LastBoss {
         
         if (this.spawnTime > 0) {
             this.spawnTime -= dt;
-            if (Math.random() < 0.3) {
-                gameEffects.push(new SparkleParticle(this.x + (Math.random() - 0.5) * 60, this.y + this.h / 2 + (Math.random() - 0.5) * 20, '#a855f7'));
+            
+            // Gather dark energy particles
+            if (Math.random() < 0.5) {
+                // Purple particles
+                gameEffects.push(new SparkleParticle(
+                    this.x + (Math.random() - 0.5) * 80, 
+                    this.y + (Math.random() - 0.5) * 80, 
+                    '#a855f7'
+                ));
+            }
+            if (Math.random() < 0.4) {
+                // Blood particles converging towards the center spawn position
+                let angle = Math.random() * Math.PI * 2;
+                let dist = 140 + Math.random() * 90;
+                let px = this.x + Math.cos(angle) * dist;
+                let py = this.y + Math.sin(angle) * dist;
+                let bp = new BloodParticle(px, py);
+                bp.vx = -Math.cos(angle) * 3.8;
+                bp.vy = -Math.sin(angle) * 3.8;
+                gameEffects.push(bp);
+            }
+            if (Math.random() < 0.15) {
+                // Red lightning sparks
+                gameEffects.push(new LightningParticle(
+                    this.x + (Math.random() - 0.5) * 60,
+                    this.y - this.h * 0.3 + (Math.random() - 0.5) * 60
+                ));
+            }
+            
+            // Screen rumble to build tension during summoning
+            shakeIntensity = Math.max(shakeIntensity, 1.8);
+            
+            // When boss hits the ground (summoning completes)
+            if (this.spawnTime <= 0 && !this.landedEffectTriggered) {
+                this.landedEffectTriggered = true;
+                
+                // 1. Heavy camera shake
+                shakeIntensity = 38;
+                
+                // 2. Shockwaves
+                gameEffects.push(new ShockwaveRing(this.x, this.y, 140, false));
+                gameEffects.push(new ShockwaveRing(this.x, this.y, 80, true));
+                
+                // 3. Explosive particle burst
+                for (let i = 0; i < 35; i++) {
+                    let angle = Math.random() * Math.PI * 2;
+                    let speed = 3 + Math.random() * 8;
+                    let bp = new BloodParticle(this.x, this.y);
+                    bp.vx = Math.cos(angle) * speed;
+                    bp.vy = Math.sin(angle) * speed;
+                    gameEffects.push(bp);
+                }
+                for (let i = 0; i < 20; i++) {
+                    gameEffects.push(new SparkleParticle(this.x + (Math.random() - 0.5) * 100, this.y + (Math.random() - 0.5) * 100, '#a855f7'));
+                    gameEffects.push(new FrostParticle(this.x + (Math.random() - 0.5) * 100, this.y + (Math.random() - 0.5) * 100));
+                }
+                for (let i = 0; i < 8; i++) {
+                    gameEffects.push(new LightningParticle(this.x, this.y - this.h * 0.3));
+                }
+                
+                // 4. Ground impact audio feedback
+                playIceShatterSound();
+                playMagicSound();
             }
             return;
         }
@@ -5178,6 +5336,10 @@ class LastBoss {
         
         if (this.thunderFlashCooldown > 0) {
             this.thunderFlashCooldown -= dt;
+        }
+        
+        if (this.instantKillCooldown > 0) {
+            this.instantKillCooldown -= dt;
         }
         
         const px = player.x + player.width / 2;
@@ -5230,19 +5392,43 @@ class LastBoss {
         if (this.patternCooldown <= 0) {
             this.chooseNextPattern(dist);
         } else {
+            // Update strafe direction timer
+            this.strafeTimer -= dt;
+            if (this.strafeTimer <= 0) {
+                this.strafeDirection = Math.random() < 0.5 ? 1 : -1;
+                this.strafeTimer = 1500 + Math.random() * 1500; // swap direction every 1.5 - 3 seconds
+            }
+
             this.state = 'walk';
             let currentSpeed = this.speed * (this.phase === 2 ? 1.5 : 1.0);
             if (this.isFrozen) currentSpeed *= 0.3;
             
-            if (dist > 100) {
-                this.x += (dx / dist) * currentSpeed * dtScale;
-                this.y += (dy / dist) * currentSpeed * dtScale;
-            } else if (dist < 60) {
-                this.x -= (dx / dist) * currentSpeed * dtScale;
-                this.y -= (dy / dist) * currentSpeed * dtScale;
-            } else {
-                this.state = 'idle';
+            let vx = 0;
+            let vy = 0;
+            
+            // 1. Radial component (keep distance between 150 and 260)
+            if (dist > 260) {
+                vx += (dx / dist) * currentSpeed;
+                vy += (dy / dist) * currentSpeed;
+            } else if (dist < 150) {
+                vx -= (dx / dist) * currentSpeed * 1.25; // back off slightly faster
+                vy -= (dy / dist) * currentSpeed * 1.25;
             }
+            
+            // 2. Tangent component (strafe perpendicular to player direction)
+            const strafeSpeed = currentSpeed * 0.85;
+            vx += (-dy / dist) * this.strafeDirection * strafeSpeed;
+            vy += (dx / dist) * this.strafeDirection * strafeSpeed;
+            
+            // Normalize velocity to not exceed currentSpeed
+            const velLen = Math.hypot(vx, vy) || 1;
+            if (velLen > currentSpeed) {
+                vx = (vx / velLen) * currentSpeed;
+                vy = (vy / velLen) * currentSpeed;
+            }
+            
+            this.x += vx * dtScale;
+            this.y += vy * dtScale;
             
             const clamped = clampToArena(this.x, this.y, this.w, this.h);
             this.x = clamped.x;
@@ -5266,6 +5452,18 @@ class LastBoss {
         
         // Check if thunder_flash is on cooldown
         const canUseFlash = (this.thunderFlashCooldown <= 0);
+        const canUseInstantKill = (this.phase === 2 && this.instantKillCooldown <= 0);
+        
+        if (canUseInstantKill) {
+            this.currentPattern = 'instant_kill';
+            this.instantKillCooldown = 20000; // 20s cooldown
+            this.patternState = 0;
+            this.patternTimer = 1500; // 1.5s gathering energy
+            this.currentFrame = 0;
+            this.frameTimeAcc = 0;
+            this.lockOnLine = null;
+            return;
+        }
         
         if (dist < 120) {
             // Super close range: always perform melee_5x
@@ -5416,6 +5614,8 @@ class LastBoss {
             }
             return;
         }
+        
+
         
         // Pattern 1: Jump -> Disappear -> 0.8s draw 15 warning lines -> 0.2s warn pulse -> 15x Thunderclap Flash thrusts
         else if (this.currentPattern === 'thunder_flash') {
@@ -5721,6 +5921,20 @@ class LastBoss {
             const frameInterval = 1000 / 12; // Rapid 12 fps strikes
             this.frameTimeAcc += dt;
             
+            // Dash forward slightly during active strike frames (frames 0 to 3) towards the player
+            if (this.currentFrame >= 0 && this.currentFrame <= 3 && dist > 40) {
+                const dashSpeed = 4.5 * dtScale;
+                const dirX = dx / dist;
+                const dirY = dy / dist;
+                this.x += dirX * dashSpeed;
+                this.y += dirY * dashSpeed;
+                
+                // Keep the boss clamped to the arena boundary
+                const clamped = clampToArena(this.x, this.y, this.w, this.h);
+                this.x = clamped.x;
+                this.y = clamped.y;
+            }
+            
             if (this.frameTimeAcc >= frameInterval) {
                 this.frameTimeAcc -= frameInterval;
                 this.currentFrame++;
@@ -5749,6 +5963,197 @@ class LastBoss {
                         this.currentFrame = 0;
                         this.frameTimeAcc = 0;
                     }
+                }
+            }
+        }
+        
+        // Pattern 5: Instant Kill Dark Slash (즉사암흑 일격베기)
+        else if (this.currentPattern === 'instant_kill') {
+            // State 0: Gathering energy (기를 모으는 단계)
+            if (this.patternState === 0) {
+                this.state = 'cast';
+                this.currentFrame = 0; // Standing still or cast frame
+                
+                // Energy sucking particles
+                if (Math.random() < 0.8) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 180 + Math.random() * 120;
+                    const sp = new SparkleParticle(this.x + Math.cos(angle) * radius, this.y + Math.sin(angle) * radius, '#c084fc'); // Purple sparkle
+                    sp.vx = -Math.cos(angle) * 5.0;
+                    sp.vy = -Math.sin(angle) * 5.0;
+                    gameEffects.push(sp);
+                }
+                if (Math.random() < 0.6) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 180 + Math.random() * 120;
+                    const bp = new BloodParticle(this.x + Math.cos(angle) * radius, this.y + Math.sin(angle) * radius);
+                    bp.vx = -Math.cos(angle) * 6.0;
+                    bp.vy = -Math.sin(angle) * 6.0;
+                    gameEffects.push(bp);
+                }
+                
+                // Play warning rumble
+                shakeIntensity = Math.max(shakeIntensity, 3.0);
+                
+                // Track player position with the lock-on line
+                this.lockOnLine = {
+                    x1: this.x,
+                    y1: this.y,
+                    x2: px,
+                    y2: py,
+                    isLocked: false
+                };
+                
+                this.patternTimer -= dt;
+                if (this.patternTimer <= 0) {
+                    this.patternState = 1;
+                    this.patternTimer = 1000; // 1 second locked warning
+                    playBossAppearSound();
+                }
+            }
+            // State 1: Locked-on (락온 상태에서 플레이어 추적 및 마지막 0.6초간 조준 고정)
+            else if (this.patternState === 1) {
+                this.state = 'cast';
+                
+                // Dense energy particles
+                if (Math.random() < 0.9) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = 100 + Math.random() * 80;
+                    const sp = new SparkleParticle(this.x + Math.cos(angle) * radius, this.y + Math.sin(angle) * radius, '#ec4899'); // Pink sparkle
+                    sp.vx = -Math.cos(angle) * 6.0;
+                    sp.vy = -Math.sin(angle) * 6.0;
+                    gameEffects.push(sp);
+                }
+                
+                // Stop tracking player for the final 400ms to allow them to dodge!
+                if (this.patternTimer > 400) {
+                    this.lockOnLine = {
+                        x1: this.x,
+                        y1: this.y,
+                        x2: px,
+                        y2: py,
+                        isLocked: false
+                    };
+                } else {
+                    if (this.lockOnLine) {
+                        this.lockOnLine.isLocked = true; // Lock the warning line in place
+                    }
+                }
+                
+                shakeIntensity = Math.max(shakeIntensity, 6.0);
+                
+                this.patternTimer -= dt;
+                if (this.patternTimer <= 0) {
+                    this.patternState = 2;
+                    this.patternTimer = 200; // 0.2s hyper-speed dash slash
+                    screenDarkness = 0.95; // Instant black screen overlay
+                    playUltimateSound();
+                    playSlashSound();
+                    
+                    // Store the starting and ending positions for the smooth dash!
+                    this.dashStartX = this.x;
+                    this.dashStartY = this.y;
+                    
+                    const lineDx = this.lockOnLine.x2 - this.lockOnLine.x1;
+                    const lineDy = this.lockOnLine.y2 - this.lockOnLine.y1;
+                    const lineLen = Math.hypot(lineDx, lineDy) || 1;
+                    
+                    this.dashEndX = this.lockOnLine.x2 + (lineDx / lineLen) * 60;
+                    this.dashEndY = this.lockOnLine.y2 + (lineDy / lineLen) * 60;
+                }
+            }
+            // State 2: Hyper-speed dash slash execution (0.2 seconds)
+            else if (this.patternState === 2) {
+                this.patternTimer -= dt;
+                let progress = Math.min(1.0, (200 - this.patternTimer) / 200);
+                
+                // Move boss continuously along the line
+                this.x = this.dashStartX + (this.dashEndX - this.dashStartX) * progress;
+                this.y = this.dashStartY + (this.dashEndY - this.dashStartY) * progress;
+                
+                // Clamp boss to the arena
+                const clamped = clampToArena(this.x, this.y, this.w, this.h);
+                this.x = clamped.x;
+                this.y = clamped.y;
+                
+                // Spawn boss afterimages along the path to visualize hyper-speed movement
+                if (Math.random() < 0.45) {
+                    const img = lastBossCastFrames[2] || lastBossCastFrames[0];
+                    if (img && img.complete) {
+                        gameEffects.push(new PlayerAfterimage(
+                            img, 0, 0, img.width, img.height,
+                            this.x - this.w / 2, this.y - this.h / 2,
+                            this.w, this.h,
+                            this.facing,
+                            0.08,
+                            'rgba(147, 51, 234, ALPHA)' // Purple afterimage
+                        ));
+                    }
+                }
+                
+                shakeIntensity = 65; // Massive shake
+                
+                if (this.patternTimer <= 0) {
+                    // Dash completed! Check hit & spawn blood explosion
+                    this.patternState = 3;
+                    this.patternTimer = 250; // 0.25s recovery / screen fade-in
+                    
+                    // Attack logic: Check distance from player to locked warning line
+                    const lineDx = this.lockOnLine.x2 - this.lockOnLine.x1;
+                    const lineDy = this.lockOnLine.y2 - this.lockOnLine.y1;
+                    const lineLen = Math.hypot(lineDx, lineDy) || 1;
+                    
+                    const pCenterX = player.x + player.width / 2;
+                    const pCenterY = player.y + player.height / 2;
+                    const distToSlash = distanceToSegment(pCenterX, pCenterY, this.lockOnLine.x1, this.lockOnLine.y1, this.lockOnLine.x2, this.lockOnLine.y2);
+                    
+                    if (distToSlash < 60) {
+                        if (!player.isDebugMode) {
+                            // Instant Kill Damage!
+                            player.hp = 0;
+                            player.takeDamage(9999, lineDx / lineLen, lineDy / lineLen);
+                        } else {
+                            // In debug cheat mode, just take 0 damage but show hit effect
+                            gameEffects.push(new HitSlash(pCenterX, pCenterY, true));
+                        }
+                    }
+                    
+                    // Spawn massive blood explosion at target position
+                    for (let i = 0; i < 65; i++) {
+                        const bp = new BloodParticle(this.lockOnLine.x2 + (Math.random() - 0.5) * 35, this.lockOnLine.y2 + (Math.random() - 0.5) * 35);
+                        bp.vx *= 2.2;
+                        bp.vy *= 2.2;
+                        gameEffects.push(bp);
+                    }
+                    
+                    // Spawn bloody trail along the slash line
+                    for (let t = 0.1; t <= 0.9; t += 0.08) {
+                        const sx = this.lockOnLine.x1 + lineDx * t;
+                        const sy = this.lockOnLine.y1 + lineDy * t;
+                        for (let j = 0; j < 3; j++) {
+                            gameEffects.push(new BloodParticle(sx, sy));
+                        }
+                    }
+                    
+                    // Play blast sound or impact effects
+                    playBossAppearSound();
+                    gameEffects.push(new HitSlash(this.lockOnLine.x2, this.lockOnLine.y2, true));
+                }
+            }
+            // State 3: Post-slash fade back to normal screen (0.25 seconds)
+            else if (this.patternState === 3) {
+                this.patternTimer -= dt;
+                // Fade screen back
+                screenDarkness = Math.max(0, this.patternTimer / 250);
+                
+                if (this.patternTimer <= 0) {
+                    screenDarkness = 0;
+                    this.lockOnLine = null;
+                    this.currentPattern = 'none';
+                    this.patternCooldown = 1500; // Normal boss state transition delay
+                    this.state = 'idle';
+                    this.currentFrame = 0;
+                    this.frameTimeAcc = 0;
                 }
             }
         }
@@ -5868,6 +6273,12 @@ class LastBoss {
             }
             
             gameEffects.push(new HitSlash(this.x, this.y, isMagic));
+            
+            // Lifesteal on hit
+            if (typeof upgrades !== 'undefined' && upgrades.lifeSteal > 0) {
+                player.hp = Math.min(player.maxHp, player.hp + finalAmount * upgrades.lifeSteal);
+            }
+            
             gameEffects.push(new DamageNumber(this.x, this.y - 10, finalAmount, isMagic, isCritical));
             
             if (this.groggyHp <= 0) {
@@ -5913,6 +6324,11 @@ class LastBoss {
             }
         }
         
+        // Lifesteal on hit
+        if (typeof upgrades !== 'undefined' && upgrades.lifeSteal > 0) {
+            player.hp = Math.min(player.maxHp, player.hp + finalAmount * upgrades.lifeSteal);
+        }
+        
         gameEffects.push(new DamageNumber(this.x, this.y - 10, finalAmount, isMagic, isCritical));
         
         if (this.hp <= 0) {
@@ -5935,6 +6351,65 @@ class LastBoss {
     }
     
     draw() {
+        // Draw telegraph warning lines if active (instant_kill)
+        if (this.currentPattern === 'instant_kill') {
+            if (this.patternState === 0 || this.patternState === 1) {
+                if (this.lockOnLine) {
+                    gameCtx.save();
+                    // Semi-transparent dark purple outer glow
+                    let alpha = 0.35 + Math.sin(Date.now() / 30) * 0.15;
+                    if (this.patternState === 1) {
+                        if (this.lockOnLine.isLocked) {
+                            alpha = 0.8 + Math.sin(Date.now() / 10) * 0.2; // intense flashing when locked
+                        } else {
+                            alpha = 0.5 + Math.sin(Date.now() / 20) * 0.15;
+                        }
+                    }
+                    
+                    // If locked, use a dark red/purple color scheme to warn player of imminent doom
+                    const glowColor = this.lockOnLine.isLocked ? `rgba(220, 38, 38, ${alpha})` : `rgba(147, 51, 234, ${alpha})`;
+                    const coreColor = this.lockOnLine.isLocked ? `rgba(254, 240, 138, ${alpha * 1.5})` : `rgba(236, 72, 153, ${alpha * 1.5})`;
+                    
+                    gameCtx.strokeStyle = glowColor;
+                    gameCtx.lineWidth = 45;
+                    gameCtx.lineCap = 'round';
+                    gameCtx.beginPath();
+                    gameCtx.moveTo(this.lockOnLine.x1, this.lockOnLine.y1);
+                    gameCtx.lineTo(this.lockOnLine.x2, this.lockOnLine.y2);
+                    gameCtx.stroke();
+                    
+                    // Inner core line
+                    gameCtx.strokeStyle = coreColor;
+                    gameCtx.lineWidth = 12;
+                    gameCtx.beginPath();
+                    gameCtx.moveTo(this.lockOnLine.x1, this.lockOnLine.y1);
+                    gameCtx.lineTo(this.lockOnLine.x2, this.lockOnLine.y2);
+                    gameCtx.stroke();
+                    
+                    // Lock-on target reticle at player center
+                    gameCtx.strokeStyle = this.lockOnLine.isLocked ? '#ef4444' : '#fb7185';
+                    gameCtx.lineWidth = 3;
+                    gameCtx.beginPath();
+                    gameCtx.arc(this.lockOnLine.x2, this.lockOnLine.y2, 25, 0, Math.PI * 2);
+                    gameCtx.stroke();
+                    
+                    // Crosshairs
+                    gameCtx.beginPath();
+                    gameCtx.moveTo(this.lockOnLine.x2 - 35, this.lockOnLine.y2);
+                    gameCtx.lineTo(this.lockOnLine.x2 - 15, this.lockOnLine.y2);
+                    gameCtx.moveTo(this.lockOnLine.x2 + 15, this.lockOnLine.y2);
+                    gameCtx.lineTo(this.lockOnLine.x2 + 35, this.lockOnLine.y2);
+                    gameCtx.moveTo(this.lockOnLine.x2, this.lockOnLine.y2 - 35);
+                    gameCtx.lineTo(this.lockOnLine.x2, this.lockOnLine.y2 - 15);
+                    gameCtx.moveTo(this.lockOnLine.x2, this.lockOnLine.y2 + 15);
+                    gameCtx.lineTo(this.lockOnLine.x2, this.lockOnLine.y2 + 35);
+                    gameCtx.stroke();
+                    
+                    gameCtx.restore();
+                }
+            }
+        }
+
         // Draw telegraph warning lines if active (ice_ultimate)
         if (this.currentPattern === 'ice_ultimate' && this.activeWarningLine) {
             gameCtx.save();
@@ -6080,7 +6555,11 @@ class LastBoss {
         
         // Calculate upward visual offset during jumping animation
         let jumpOffsetY = 0;
-        if (this.state === 'jump') {
+        if (this.spawnTime > 0) {
+            const progress = (this.spawnMaxTime - this.spawnTime) / this.spawnMaxTime;
+            // Quadratic ease-in visual drop effect from sky
+            jumpOffsetY = -700 * (1 - progress) * (1 - progress);
+        } else if (this.state === 'jump') {
             const offsets = [-15, -35, -45, -35];
             jumpOffsetY = offsets[Math.min(this.currentFrame, offsets.length - 1)];
         }
@@ -6135,6 +6614,13 @@ class LastBoss {
         const srcW = img.width;
         const srcH = img.height;
         
+        gameCtx.save();
+        if (this.spawnTime > 0) {
+            const progress = (this.spawnMaxTime - this.spawnTime) / this.spawnMaxTime;
+            // Smoothly fade in alpha over the spawning period
+            gameCtx.globalAlpha = Math.min(1.0, progress * 1.5);
+        }
+        
         if (this.flashTime > 0) {
             const color = this.flashTime > 130 ? 'rgba(255, 255, 255, 0.95)' : 'rgba(239, 68, 68, 0.85)';
             drawTintedImage(
@@ -6175,6 +6661,7 @@ class LastBoss {
             gameCtx.restore();
             gameCtx.restore();
         }
+        gameCtx.restore();
     }
 }
 
@@ -6243,8 +6730,47 @@ const player = {
         // Apply decaying knockback velocity (decay is faster for snappier recovery)
         // [CRITICAL BUG FIX: Moved knockback processing to the top so that hits immediately interrupt skill states & prevent movement freezes]
         if (Math.abs(this.knockbackX) > 0.1 || Math.abs(this.knockbackY) > 0.1) {
-            this.x += this.knockbackX * dtScale;
-            this.y += this.knockbackY * dtScale;
+            const kdx = this.knockbackX * dtScale;
+            const kdy = this.knockbackY * dtScale;
+            
+            // Try X movement first
+            const prevX = this.x;
+            this.x += kdx;
+            let pHbox = this.getHitbox();
+            let collidesX = false;
+            for (let effect of gameEffects) {
+                if (effect instanceof LastBossIceSpike && effect.active && effect.state === 'holding') {
+                    const spikeHbox = effect.getCollisionBox();
+                    if (rectOverlap(pHbox, spikeHbox)) {
+                        collidesX = true;
+                        break;
+                    }
+                }
+            }
+            if (collidesX) {
+                this.x = prevX;
+                this.knockbackX = 0;
+            }
+            
+            // Try Y movement next
+            const prevY = this.y;
+            this.y += kdy;
+            pHbox = this.getHitbox();
+            let collidesY = false;
+            for (let effect of gameEffects) {
+                if (effect instanceof LastBossIceSpike && effect.active && effect.state === 'holding') {
+                    const spikeHbox = effect.getCollisionBox();
+                    if (rectOverlap(pHbox, spikeHbox)) {
+                        collidesY = true;
+                        break;
+                    }
+                }
+            }
+            if (collidesY) {
+                this.y = prevY;
+                this.knockbackY = 0;
+            }
+            
             this.knockbackX *= Math.pow(0.75, dtScale);
             this.knockbackY *= Math.pow(0.75, dtScale);
             
@@ -6336,7 +6862,7 @@ const player = {
                     gameEffects.push(lp);
                 }
                 
-                if (this.ultimateChargeTime >= 500) {
+                if (this.ultimateChargeTime >= 300) {
                     // Start finisher!
                     this.isChargingUltimate = false;
                     this.ultimateChargeTime = 0;
@@ -6452,8 +6978,44 @@ const player = {
             vy *= 0.7071;
         }
         
-        this.x += vx * dtScale;
-        this.y += vy * dtScale;
+        const dx = vx * dtScale;
+        const dy = vy * dtScale;
+        
+        // Try X movement first
+        const prevX = this.x;
+        this.x += dx;
+        let pHbox = this.getHitbox();
+        let collidesX = false;
+        for (let effect of gameEffects) {
+            if (effect instanceof LastBossIceSpike && effect.active && effect.state === 'holding') {
+                const spikeHbox = effect.getCollisionBox();
+                if (rectOverlap(pHbox, spikeHbox)) {
+                    collidesX = true;
+                    break;
+                }
+            }
+        }
+        if (collidesX) {
+            this.x = prevX;
+        }
+        
+        // Try Y movement next
+        const prevY = this.y;
+        this.y += dy;
+        pHbox = this.getHitbox();
+        let collidesY = false;
+        for (let effect of gameEffects) {
+            if (effect instanceof LastBossIceSpike && effect.active && effect.state === 'holding') {
+                const spikeHbox = effect.getCollisionBox();
+                if (rectOverlap(pHbox, spikeHbox)) {
+                    collidesY = true;
+                    break;
+                }
+            }
+        }
+        if (collidesY) {
+            this.y = prevY;
+        }
         
         // Elliptical arena clamp
         const clamped = clampToArena(this.x, this.y, this.width, this.height);
@@ -6625,7 +7187,7 @@ const player = {
         
         this.hp = Math.max(0, this.hp - amount);
         this.isInvincible = true;
-        this.invincibleTime = 1000; 
+        this.invincibleTime = 500; // 0.5 seconds
         shakeIntensity = 12; 
         
         // Apply knockback velocities (snappy bounce)
@@ -6675,7 +7237,7 @@ const player = {
 
         // Draw charging pose and gauge bar
         if (this.isChargingUltimate) {
-            const frame = Math.floor((this.ultimateChargeTime / 500) * 5); // 0 to 4
+            const frame = Math.floor((this.ultimateChargeTime / 300) * 5); // 0 to 4
             const img = finishFrames[Math.min(4, frame)];
             if (img && img.complete) {
                 gameCtx.save();
@@ -6711,7 +7273,7 @@ const player = {
             }
             
             // Draw the yellow gauge bar above the player's head
-            const progress = Math.min(1.0, this.ultimateChargeTime / 500);
+            const progress = Math.min(1.0, this.ultimateChargeTime / 300);
             const barW = 60;
             const barH = 8;
             const bx = this.x + this.width / 2 - barW / 2;
@@ -6933,18 +7495,30 @@ function setHighScore(s) {
 function triggerGameClear() {
     gameState = 'GAMEOVER'; // stop update processing loop
     
-    // Show game clear banner
-    const clearBanner = document.getElementById('game-clear-banner');
-    if (clearBanner) {
-        clearBanner.style.display = 'block';
-    }
-    
     // Clear all lingering ice spikes
     gameEffects = gameEffects.filter(e => !(e instanceof LastBossIceSpike));
     
     // Play clear heal fanfare / sound
     playHealSound();
     score += 5000; // Large score bonus for clearing the last boss!
+    
+    // Calculate play time
+    const duration = Date.now() - sessionStartTime;
+    const min = Math.floor(duration / 60000);
+    const sec = Math.floor((duration % 60000) / 1000);
+    const playtimeStr = `${min}분 ${sec}초`;
+    
+    // Inject victory statistics
+    document.getElementById('gc-score').textContent = score.toLocaleString();
+    document.getElementById('gc-kills').textContent = totalKills + ' 마리';
+    document.getElementById('gc-maxdmg').textContent = maxDamageDealt.toLocaleString() + ' 피해';
+    document.getElementById('gc-playtime').textContent = playtimeStr;
+    
+    // Show game clear banner
+    const clearBanner = document.getElementById('game-clear-banner');
+    if (clearBanner) {
+        clearBanner.style.display = 'flex';
+    }
     
     // Spawn festive particle explosion
     for (let i = 0; i < 150; i++) {
@@ -6955,13 +7529,36 @@ function triggerGameClear() {
         gameEffects.push(p);
     }
     
-    // Return to title after 3 seconds
-    setTimeout(() => {
+    // 6 Seconds Countdown Timer and Button handling
+    const timerFill = document.getElementById('game-clear-timer-fill');
+    const btn = document.getElementById('game-clear-btn');
+    
+    let startTime = Date.now();
+    let durationMax = 6000; // 6 seconds
+    
+    let timerInterval = setInterval(() => {
+        let elapsed = Date.now() - startTime;
+        let progress = Math.max(0, 1 - elapsed / durationMax);
+        if (timerFill) {
+            timerFill.style.transform = `scaleX(${progress})`;
+        }
+        if (elapsed >= durationMax) {
+            clearInterval(timerInterval);
+            finishGameClear();
+        }
+    }, 16);
+    
+    const finishGameClear = () => {
+        clearInterval(timerInterval);
         if (clearBanner) {
             clearBanner.style.display = 'none';
         }
         showTitleScreen();
-    }, 3000);
+    };
+    
+    if (btn) {
+        btn.onclick = finishGameClear;
+    }
 }
 
 function showTitleScreen() {
@@ -7649,6 +8246,7 @@ function startPlayingGame() {
         maxCombo = 0;
         sessionStartTime = Date.now();
         bossSpawned = false;
+        lastUpgradesUIString = "";
 
         // Reset upgrades
         upgrades.swordDamage    = 1.0;
@@ -7733,6 +8331,69 @@ function triggerGameOver() {
     ingameHud.style.display = 'none';
 }
 
+let lastUpgradesUIString = "";
+function updateUpgradesUI() {
+    const container = document.getElementById('hud-upgrades');
+    if (!container) return;
+    
+    let html = '';
+    
+    // 1. 검격
+    if (upgrades.swordDamage > 1.0) {
+        const val = Math.round((upgrades.swordDamage - 1) * 100);
+        html += `<div class="upgrade-badge" style="border-color: #ef4444;"><span style="font-size:1.1em;">⚔️</span> <span>검격 강화 +${val}%</span></div>`;
+    }
+    // 2. 불길
+    if (upgrades.fireballDamage > 1.0) {
+        const val = Math.round((upgrades.fireballDamage - 1) * 100);
+        html += `<div class="upgrade-badge" style="border-color: #f97316;"><span style="font-size:1.1em;">🔥</span> <span>파이어볼 +${val}%</span></div>`;
+    }
+    // 3. 빙결
+    if (upgrades.iceDamage > 1.0) {
+        const val = Math.round((upgrades.iceDamage - 1) * 100);
+        html += `<div class="upgrade-badge" style="border-color: #00f5ff;"><span style="font-size:1.1em;">❄️</span> <span>빙결 강화 +${val}%</span></div>`;
+    }
+    // 4. 이동속도
+    if (upgrades.moveSpeed > 1.0) {
+        const val = Math.round((upgrades.moveSpeed - 1) * 100);
+        html += `<div class="upgrade-badge" style="border-color: #4ade80;"><span style="font-size:1.1em;">💨</span> <span>이속 강화 +${val}%</span></div>`;
+    }
+    // 5. 흡혈
+    if (upgrades.lifeSteal > 0.0) {
+        const val = Math.round(upgrades.lifeSteal * 100);
+        html += `<div class="upgrade-badge" style="border-color: #c026d3;"><span style="font-size:1.1em;">🩸</span> <span>흡혈 +${val}%</span></div>`;
+    }
+    // 6. 강인한 육체
+    if (upgrades.maxHpBonus > 0) {
+        html += `<div class="upgrade-badge" style="border-color: #fbbf24;"><span style="font-size:1.1em;">🛡️</span> <span>최대 HP +${upgrades.maxHpBonus}</span></div>`;
+    }
+    // 7. 마나 절약
+    if (upgrades.mpCostReduce < 1.0) {
+        const val = Math.round((1 - upgrades.mpCostReduce) * 100);
+        html += `<div class="upgrade-badge" style="border-color: #a855f7;"><span style="font-size:1.1em;">⚡</span> <span>MP 소비 -${val}%</span></div>`;
+    }
+    // 8. 마나 시야
+    if (upgrades.mpRegenBonus > 1.0) {
+        const val = upgrades.mpRegenBonus.toFixed(1);
+        html += `<div class="upgrade-badge" style="border-color: #3b82f6;"><span style="font-size:1.1em;">🔮</span> <span>MP 회복 x${val}</span></div>`;
+    }
+    // 9. 크리티컬
+    if (upgrades.critBonus > 0.0) {
+        const val = Math.round(upgrades.critBonus * 100);
+        html += `<div class="upgrade-badge" style="border-color: #ff003c;"><span style="font-size:1.1em;">💥</span> <span>치명타 +${val}%</span></div>`;
+    }
+    // 10. 최후의 섬광
+    if (upgrades.ultimateDamage > 1.0) {
+        const val = Math.round((upgrades.ultimateDamage - 1) * 100);
+        html += `<div class="upgrade-badge" style="border-color: #facc15;"><span style="font-size:1.1em;">⚡</span> <span>최후의섬광 +${val}%</span></div>`;
+    }
+    
+    if (html !== lastUpgradesUIString) {
+        lastUpgradesUIString = html;
+        container.innerHTML = html;
+    }
+}
+
 // ============================================================
 // UPDATE HUD
 // ============================================================
@@ -7782,29 +8443,58 @@ function updateHUD() {
         const activeEnemies = ghosts.filter(g => g.active).length;
         hudEnemies.textContent = `적: ${activeEnemies} | 남은 스폰: ${waveSpawnQueue.length}`;
     }
+    
+    // Update active upgrades list
+    updateUpgradesUI();
 }
 
 // ============================================================
 // INPUT HANDLERS
 // ============================================================
-let pKeyPressCount = 0;
-let lastPKeyPressTime = 0;
-let tKeyPressCount = 0;
-let lastTKeyPressTime = 0;
-let rKeyPressCount = 0;
-let lastRKeyPressTime = 0;
-let nKeyPressCount = 0;
-let lastNKeyPressTime = 0;
-let zKeyPressCount = 0;
-let lastZKeyPressTime = 0;
-let xKeyPressCount = 0;
-let lastXKeyPressTime = 0;
+
 
 window.addEventListener('keydown', (e) => {
     getAudioContext();
     if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
 
     const key = e.key.toLowerCase();
+
+    // Cheat Keys detection
+    const now = Date.now();
+    if (key === 'n') {
+        if (now - cheatKeys.n.lastTime > 1500) {
+            cheatKeys.n.count = 0;
+        }
+        cheatKeys.n.count++;
+        cheatKeys.n.lastTime = now;
+        
+        if (cheatKeys.n.count === 3) {
+            player.isDebugMode = !player.isDebugMode;
+            showNotification(`무적 모드: ${player.isDebugMode ? 'ON' : 'OFF'}`);
+            cheatKeys.n.count = 0;
+        }
+    }
+    
+    if (key === 'm') {
+        if (now - cheatKeys.m.lastTime > 1500) {
+            cheatKeys.m.count = 0;
+        }
+        cheatKeys.m.count++;
+        cheatKeys.m.lastTime = now;
+        
+        if (cheatKeys.m.count === 3) {
+            if (gameState === 'PLAYING') {
+                ghosts = [];
+                gameEffects = [];
+                bossSpawned = false;
+                if (waveClearBanner) waveClearBanner.classList.remove('show');
+                if (waveAnnounce) waveAnnounce.classList.remove('show');
+                startWave(10);
+                showNotification("스테이지 10 이동!");
+            }
+            cheatKeys.m.count = 0;
+        }
+    }
 
     // Tutorial Recommendation Modal shortcuts
     if (gameState === 'TUTORIAL_MODAL') {
@@ -7844,83 +8534,7 @@ window.addEventListener('keydown', (e) => {
         return;
     }
 
-    // Debug: PPP spawns boss
-    if (key === 'p') {
-        const now = Date.now();
-        if (now - lastPKeyPressTime < 400) pKeyPressCount++;
-        else pKeyPressCount = 1;
-        lastPKeyPressTime = now;
-        if (pKeyPressCount === 3) { pKeyPressCount = 0; triggerBossSpawn(); }
-    }
 
-    if (key === 't' && gameState === 'PLAYING') {
-        const now = Date.now();
-        if (now - lastTKeyPressTime < 400) tKeyPressCount++;
-        else tKeyPressCount = 1;
-        lastTKeyPressTime = now;
-        if (tKeyPressCount === 3) { tKeyPressCount = 0; spawnSorcererDebug(); }
-    }
-
-    if (key === 'r') {
-        const now = Date.now();
-        if (now - lastRKeyPressTime < 400) rKeyPressCount++;
-        else rKeyPressCount = 1;
-        lastRKeyPressTime = now;
-        if (rKeyPressCount === 3) { rKeyPressCount = 0; spawnLastBossDebug(); }
-    }
-
-    if (key === 'n') {
-        const now = Date.now();
-        if (now - lastNKeyPressTime < 400) nKeyPressCount++;
-        else nKeyPressCount = 1;
-        lastNKeyPressTime = now;
-        if (nKeyPressCount === 3) {
-            nKeyPressCount = 0;
-            player.isDebugMode = !player.isDebugMode;
-            if (player.isDebugMode) {
-                player.hp = player.maxHp;
-                player.mp = player.maxMp;
-            }
-        }
-    }
-
-    // Debug: ZZZ deals 5000 damage to all active monsters
-    if (key === 'z' && gameState === 'PLAYING') {
-        const now = Date.now();
-        if (now - lastZKeyPressTime < 400) zKeyPressCount++;
-        else zKeyPressCount = 1;
-        lastZKeyPressTime = now;
-        if (zKeyPressCount === 3) {
-            zKeyPressCount = 0;
-            ghosts.forEach(g => {
-                if (g.active) {
-                    g.takeDamage(5000, 0, 0, false, false, true);
-                }
-            });
-        }
-    }
-
-    // Debug: XXX skips current wave
-    if (key === 'x' && gameState === 'PLAYING') {
-        const now = Date.now();
-        if (now - lastXKeyPressTime < 400) xKeyPressCount++;
-        else xKeyPressCount = 1;
-        lastXKeyPressTime = now;
-        if (xKeyPressCount === 3) {
-            xKeyPressCount = 0;
-            if (waveActive) {
-                ghosts.forEach(g => {
-                    if (g.active) {
-                        g.active = false;
-                    }
-                });
-                waveSpawnQueue = [];
-                bossSpawned = false;
-                waveActive = false;
-                endWave();
-            }
-        }
-    }
 
     handleKey(e, true);
 });
@@ -8203,6 +8817,12 @@ function gameLoop(time) {
         }
         gameEffects.forEach(e => e.draw());
         gameCtx.restore();
+        
+        // Full screen darkness effect for boss instant kill attack
+        if (typeof screenDarkness !== 'undefined' && screenDarkness > 0) {
+            gameCtx.fillStyle = `rgba(0, 0, 0, ${screenDarkness})`;
+            gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+        }
     }
 
     requestAnimationFrame(gameLoop);

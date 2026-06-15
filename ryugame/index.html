@@ -114,29 +114,8 @@
             </div>
         </div>
 
-        <!-- Bottom-left: Skill slots -->
-        <div class="hud-skills">
-            <div class="skill-slot" id="skill-j">
-                <span class="skill-slot-icon">⚔️</span>
-                <span class="skill-slot-key">J</span>
-                <div class="skill-cd-overlay"><span class="skill-cd-text"></span></div>
-            </div>
-            <div class="skill-slot" id="skill-k">
-                <span class="skill-slot-icon">🔥</span>
-                <span class="skill-slot-key">K</span>
-                <div class="skill-cd-overlay"><span class="skill-cd-text"></span></div>
-            </div>
-            <div class="skill-slot" id="skill-u">
-                <span class="skill-slot-icon">⚡</span>
-                <span class="skill-slot-key">U (HOLD)</span>
-                <div class="skill-cd-overlay"><span class="skill-cd-text"></span></div>
-            </div>
-            <div class="skill-slot" id="skill-i">
-                <span class="skill-slot-icon">❄️</span>
-                <span class="skill-slot-key">I (HOLD)</span>
-                <div class="skill-cd-overlay"><span class="skill-cd-text"></span></div>
-            </div>
-        </div>
+        <!-- Bottom-left: Upgrade List -->
+        <div class="hud-upgrades" id="hud-upgrades"></div>
 
         <!-- Controls reminder (small, bottom-center) -->
         <div style="position:absolute; bottom:14px; left:50%; transform:translateX(-50%); text-align:center; pointer-events:none;">
@@ -152,10 +131,37 @@
         <div class="wave-clear-sub">다음 웨이브 준비중...</div>
     </div>
 
-    <!-- ===== GAME CLEAR BANNER ===== -->
-    <div id="game-clear-banner" style="display: none; position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; text-align: center; font-family: monospace; pointer-events: none;">
-        <div style="font-size: 3.5rem; color: #fbbf24; font-weight: bold; text-shadow: 0 0 25px rgba(251, 191, 36, 0.75); letter-spacing: 8px; animation: pulse 1.5s infinite; margin-bottom: 15px;">🏆 GAME CLEAR! 🏆</div>
-        <div style="font-size: 1.2rem; color: #f1f5f9; letter-spacing: 3px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">잠시 후 타이틀 화면으로 이동합니다...</div>
+    <!-- ===== GAME CLEAR OVERLAY ===== -->
+    <div id="game-clear-banner" style="display: none;">
+        <div class="game-clear-content">
+            <div class="game-clear-trophy">🏆</div>
+            <h1 class="game-clear-title">VICTORY</h1>
+            <div class="game-clear-subtitle">라스트 보스를 격퇴하고 아레나를 정복했습니다!</div>
+            
+            <div class="game-clear-stats-panel">
+                <div class="stat-row">
+                    <span class="stat-name">최종 점수</span>
+                    <span class="stat-val" id="gc-score">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">처치한 몬스터</span>
+                    <span class="stat-val" id="gc-kills">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">최대 단일 피해</span>
+                    <span class="stat-val" id="gc-maxdmg">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">플레이 타임</span>
+                    <span class="stat-val" id="gc-playtime">0</span>
+                </div>
+            </div>
+            
+            <button class="game-clear-btn" id="game-clear-btn">타이틀 화면으로 이동</button>
+            <div class="game-clear-timer-bar">
+                <div class="game-clear-timer-fill" id="game-clear-timer-fill"></div>
+            </div>
+        </div>
     </div>
 
     <!-- ===== WAVE ANNOUNCEMENT ===== -->
